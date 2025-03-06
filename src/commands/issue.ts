@@ -1,8 +1,17 @@
-import { command, oneOf, multioption, subcommands, array } from "cmd-ts";
+import {
+  command,
+  oneOf,
+  multioption,
+  subcommands,
+  array,
+  option,
+  string,
+} from "cmd-ts";
 import toRelative from "../date/toRelative";
 
 import client from "../linear/client";
 import { printTable } from "../console/print";
+import truncate from "../utils/truncate";
 
 const issueStates = [
   "started",
@@ -22,29 +31,57 @@ const list = command({
     state: multioption({
       type: array(oneOf<IssueState>(issueStates)),
       long: "state",
+      short: "s",
       description:
-        "Filter by issue state (completed, canceled, backlog, triage, unstarted, started). Defaults to everything except 'completed'.",
+        "Filter by issue state (completed, canceled, backlog, triage, unstarted, started). Default is everything except completed or cancelled",
+    }),
+
+    assignee: option({
+      type: string,
+      long: "assignee",
+      short: "a",
+      defaultValue: () => "@me",
+      description: "assignee",
     }),
   },
 
-  handler: async ({ state }) => {
+  handler: async ({ state, assignee }) => {
     const me = await client.viewer;
 
-    const filter =
+    const stateFilter =
       state.length === 0
         ? { state: { type: { neq: "completed" } } }
         : { state: { type: { in: state } } };
 
-    const myIssues = await me.assignedIssues({
-      filter: filter,
-    });
+    const issues =
+      assignee === "@me"
+        ? await me.assignedIssues({ filter: { ...stateFilter } })
+        : await client.issues({
+            filter: {
+              ...stateFilter,
+              ...{
+                assignee: {
+                  displayName: {
+                    contains: assignee.toLowerCase(),
+                  },
+                },
+              },
+            },
+          });
 
-    const mappedIssues = myIssues.nodes.map((i) => ({
-      ID: `[${i.identifier}]`,
-      Title: i.title,
-      Priority: i.priorityLabel,
-      Updated: toRelative(new Date(i.updatedAt)),
-    }));
+    const mappedIssues = await Promise.all(
+      issues.nodes.map(async (i) => {
+        const [assignee, state] = await Promise.all([i.assignee, i.state]);
+        return {
+          ID: `[${i.identifier}]`,
+          Title: truncate(i.title, 64),
+          // Priority: i.priorityLabel,
+          Status: state?.name,
+          Assignee: assignee?.displayName,
+          // Updated: toRelative(new Date(i.updatedAt)),
+        };
+      }),
+    );
 
     if (!mappedIssues.length) {
       console.info("No issues found");

@@ -28,12 +28,6 @@ export function printTable(values: any[]) {
     style: { "padding-left": 0, "padding-right": 0 },
   });
 
-  // table.push([
-  //   ...keys.map(() => {
-  //     return " ";
-  //   }),
-  // ]);
-
   for (const value of values) {
     table.push([
       ...keys.map((key) => {
