@@ -1,4 +1,4 @@
-import { command, oneOf, option, optional, subcommands } from "cmd-ts";
+import { command, oneOf, multioption, subcommands, array } from "cmd-ts";
 import toRelative from "../date/toRelative";
 
 import client from "../linear/client";
@@ -7,7 +7,7 @@ import { printTable } from "../console/print";
 const issueStates = [
   "started",
   "completed",
-  "canceled",
+  "cancelled",
   "completed",
   "backlog",
   "triage",
@@ -19,20 +19,8 @@ type IssueState = (typeof issueStates)[number];
 const list = command({
   name: "list",
   args: {
-    // The user can optionally provide a state. If omitted, we default to "everything except completed".
-    state: option({
-      // Validate user input against IssueState
-      type: optional(
-        oneOf<IssueState>([
-          "completed",
-          "canceled",
-          "backlog",
-          "triage",
-          "started",
-          "unstarted",
-        ]),
-      ),
-
+    state: multioption({
+      type: array(oneOf<IssueState>(issueStates)),
       long: "state",
       description:
         "Filter by issue state (completed, canceled, backlog, triage, unstarted, started). Defaults to everything except 'completed'.",
@@ -42,9 +30,10 @@ const list = command({
   handler: async ({ state }) => {
     const me = await client.viewer;
 
-    const filter = state
-      ? { state: { type: { eq: state } } }
-      : { state: { type: { neq: "completed" } } };
+    const filter =
+      state.length === 0
+        ? { state: { type: { neq: "completed" } } }
+        : { state: { type: { in: state } } };
 
     const myIssues = await me.assignedIssues({
       filter: filter,
