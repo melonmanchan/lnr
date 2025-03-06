@@ -2,6 +2,7 @@ import { command, subcommands } from "cmd-ts";
 import toRelative from "../date/toRelative";
 
 import client from "../linear/client";
+import { printTable } from "../console/print";
 
 const list = command({
   name: "list",
@@ -14,11 +15,13 @@ const list = command({
       (issue) => issue.completedAt === undefined,
     );
 
-    notClosedIssues.forEach((issue) =>
-      console.log(
-        `[${issue.identifier}]: ${issue.title} ${toRelative(new Date(issue.updatedAt))}`,
-      ),
-    );
+    const mappedIssues = notClosedIssues.map((i) => ({
+      ID: `[${i.identifier}]`,
+      Title: i.title,
+      Updated: toRelative(new Date(i.updatedAt)),
+    }));
+
+    printTable(mappedIssues);
   },
 });
 

@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@linear/sdk": "^38.0.0",
+    "cli-table3": "^0.6.5",
     "cmd-ts": "^0.13.0"
   }
 }
