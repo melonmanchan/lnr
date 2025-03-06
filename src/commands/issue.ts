@@ -10,6 +10,7 @@ import {
 // import toRelative from "../date/toRelative";
 
 import client from "../linear/client";
+import config from "../config";
 import { printTable } from "../console/print";
 import truncate from "../utils/truncate";
 
@@ -88,11 +89,41 @@ const list = command({
       return;
     }
 
+    console.log(`Issues assigned to ${assignee}:\n`);
+
     printTable(mappedIssues);
+  },
+});
+
+const create = command({
+  name: "create",
+  args: {
+    title: option({
+      type: string,
+      long: "title",
+      short: "t",
+      description: "Issue title",
+    }),
+    project: option({
+      type: string,
+      long: "project",
+      short: "-p",
+      description: "Project",
+    }),
+  },
+  handler: async ({ title, project }) => {
+    const payload = await client.createIssue({
+      teamId: config.TEAM_ID,
+
+      projectId: project,
+      title,
+    });
+
+    console.log("new");
   },
 });
 
 export const issue = subcommands({
   name: "issue",
-  cmds: { list },
+  cmds: { list, create },
 });
