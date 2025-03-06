@@ -5,6 +5,8 @@ export function printTable(values: any[]) {
 
   const table = new Table({
     head: keys,
+    truncate: "true",
+
     chars: {
       top: "",
       "top-mid": "",
@@ -22,8 +24,15 @@ export function printTable(values: any[]) {
       "right-mid": "",
       middle: " ",
     },
+
     style: { "padding-left": 0, "padding-right": 0 },
   });
+
+  // table.push([
+  //   ...keys.map(() => {
+  //     return " ";
+  //   }),
+  // ]);
 
   for (const value of values) {
     table.push([

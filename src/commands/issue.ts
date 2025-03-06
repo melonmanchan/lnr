@@ -42,6 +42,7 @@ const list = command({
     const mappedIssues = myIssues.nodes.map((i) => ({
       ID: `[${i.identifier}]`,
       Title: i.title,
+      Priority: i.priorityLabel,
       Updated: toRelative(new Date(i.updatedAt)),
     }));
 
