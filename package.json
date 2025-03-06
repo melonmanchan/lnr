@@ -1,5 +1,8 @@
 {
   "name": "lr",
+  "scripts": {
+    "build": "bun build src/index.ts --compile --outfile bin/lr"
+  },
   "module": "src/index.ts",
   "type": "module",
   "private": true,
