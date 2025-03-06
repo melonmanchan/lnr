@@ -7,7 +7,7 @@ import {
   option,
   string,
 } from "cmd-ts";
-import toRelative from "../date/toRelative";
+// import toRelative from "../date/toRelative";
 
 import client from "../linear/client";
 import { printTable } from "../console/print";
@@ -16,7 +16,7 @@ import truncate from "../utils/truncate";
 const issueStates = [
   "started",
   "completed",
-  "cancelled",
+  "canceled",
   "completed",
   "backlog",
   "triage",
@@ -50,7 +50,7 @@ const list = command({
 
     const stateFilter =
       state.length === 0
-        ? { state: { type: { neq: "completed" } } }
+        ? { state: { type: { nin: ["completed", "canceled"] } } }
         : { state: { type: { in: state } } };
 
     const issues =
