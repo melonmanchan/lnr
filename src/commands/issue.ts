@@ -114,9 +114,20 @@ const create = command({
     }),
   },
   handler: async ({ title, project }) => {
-    const projects = await client.projects();
+    const me = await client.viewer;
+    const teams = await me.teams();
 
-    const projectChoices = projects.nodes.map((p) => {
+    const projects = (
+      await Promise.all(
+        teams.nodes.map(async (t) => {
+          const p = await t.projects();
+
+          return p.nodes;
+        }),
+      )
+    ).flat();
+
+    const projectChoices = projects.map((p) => {
       return {
         name: `${p.name}`,
         value: p.id,
