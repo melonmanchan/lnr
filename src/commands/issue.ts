@@ -114,6 +114,15 @@ const create = command({
     }),
   },
   handler: async ({ title, project }) => {
+    const projects = await client.projects();
+
+    const projectChoices = projects.nodes.map((p) => {
+      return {
+        name: `${p.name}`,
+        value: p.id,
+      };
+    });
+
     const titlePrompt = new Enquirer<{ title: string }>();
 
     const newTitle = title
@@ -132,7 +141,7 @@ const create = command({
           type: "autocomplete",
           name: "project",
           message: "Select a project",
-          choices: ["Option 1", "Option 2", "Option 3", "Option 4"],
+          choices: projectChoices,
         });
 
     console.log(newProject.project);
