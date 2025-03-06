@@ -6,8 +6,10 @@ import {
   array,
   option,
   string,
+  optional,
 } from "cmd-ts";
-// import toRelative from "../date/toRelative";
+
+import Enquirer from "enquirer";
 
 import client from "../linear/client";
 import config from "../config";
@@ -99,27 +101,37 @@ const create = command({
   name: "create",
   args: {
     title: option({
-      type: string,
+      type: optional(string),
       long: "title",
       short: "t",
       description: "Issue title",
     }),
     project: option({
-      type: string,
+      type: optional(string),
       long: "project",
       short: "-p",
       description: "Project",
     }),
   },
   handler: async ({ title, project }) => {
-    const payload = await client.createIssue({
-      teamId: config.TEAM_ID,
+    const titlePrompt = new Enquirer<{ title: string }>();
 
-      projectId: project,
-      title,
-    });
+    const newTitle = title
+      ? { title }
+      : await titlePrompt.prompt({
+          type: "input",
+          name: "title",
+          message: "Issue title",
+        });
 
-    console.log("new");
+    console.log(newTitle.title);
+
+    // const payload = await client.createIssue({
+    //   teamId: config.TEAM_ID,
+
+    //   projectId: project,
+    //   title,
+    // });
   },
 });
 
