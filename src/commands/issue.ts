@@ -1,16 +1,24 @@
 import { command, subcommands } from "cmd-ts";
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import toRelative from "../date/toRelative";
+
+import client from "../linear/client";
 
 const list = command({
   name: "list",
   args: {},
   handler: async () => {
-    console.log("list1");
-    await delay(1000);
+    const me = await client.viewer;
+    const myIssues = await me.assignedIssues();
 
-    console.log("list");
+    const notClosedIssues = myIssues.nodes.filter(
+      (issue) => issue.completedAt === undefined,
+    );
+
+    notClosedIssues.forEach((issue) =>
+      console.log(
+        `[${issue.identifier}]: ${issue.title} ${toRelative(new Date(issue.updatedAt))}`,
+      ),
+    );
   },
 });
 

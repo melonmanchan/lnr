@@ -3,6 +3,7 @@
     // Enable latest features
     "lib": [
       "ESNext",
+      "ES2020",
       "DOM"
     ],
     "target": "ESNext",
