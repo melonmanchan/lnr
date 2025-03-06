@@ -13,6 +13,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@linear/sdk": "^38.0.0",
     "cmd-ts": "^0.13.0"
   }
 }
