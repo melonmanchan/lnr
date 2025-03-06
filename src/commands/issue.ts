@@ -124,7 +124,18 @@ const create = command({
           message: "Issue title",
         });
 
-    console.log(newTitle.title);
+    const projectPrompt = new Enquirer<{ project: string }>();
+
+    const newProject = project
+      ? { project }
+      : await projectPrompt.prompt({
+          type: "autocomplete",
+          name: "project",
+          message: "Select a project",
+          choices: ["Option 1", "Option 2", "Option 3", "Option 4"],
+        });
+
+    console.log(newProject.project);
 
     // const payload = await client.createIssue({
     //   teamId: config.TEAM_ID,
