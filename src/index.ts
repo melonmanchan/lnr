@@ -1,13 +1,9 @@
-import { command, run, string, positional } from "cmd-ts";
+import { run, subcommands } from "cmd-ts";
+import { issue } from "./commands/issue";
 
-const app = command({
-  name: "my-first-app",
-  args: {
-    someArg: positional({ type: string, displayName: "some arg" }),
-  },
-  handler: ({ someArg }) => {
-    console.log({ someArg });
-  },
+const app = subcommands({
+  name: "lr",
+  cmds: { issue },
 });
 
 run(app, process.argv.slice(2));
