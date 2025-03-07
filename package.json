@@ -1,13 +1,10 @@
 {
   "name": "lr",
-  "scripts": {
-    "build": "bun build src/index.ts --compile --outfile bin/lr"
-  },
   "module": "src/index.ts",
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "tsx": "^4.19.3"
   },
   "peerDependencies": {
     "typescript": "^5"

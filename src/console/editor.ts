@@ -1,6 +1,8 @@
 import path from "path";
 import os from "os";
 import config from "../config";
+import fs from "fs";
+import { execSync } from "child_process";
 
 export async function openTextEditor(initialContent = ""): Promise<string> {
   const randomHash = Math.random().toString(36).substring(2, 15);
@@ -9,20 +11,12 @@ export async function openTextEditor(initialContent = ""): Promise<string> {
 
   const tmpFileName = path.join(os.tmpdir(), fileName);
 
-  await Bun.write(tmpFileName, initialContent);
+  fs.writeFileSync(tmpFileName, initialContent, "utf8");
 
   const editor = config.EDITOR;
 
-  const process = Bun.spawn({
-    cmd: [editor, tmpFileName],
-    stdout: "inherit",
-    stdin: "inherit",
-    stderr: "inherit",
-  });
+  execSync(`${editor} "${tmpFileName}"`, { stdio: "inherit" });
 
-  await process.exited;
-
-  const finalContent = await Bun.file(tmpFileName).text();
-
+  const finalContent = fs.readFileSync(tmpFileName, "utf8");
   return finalContent.trim();
 }
