@@ -1,5 +1,5 @@
 import { run, subcommands } from "cmd-ts";
-import { issue } from "./commands/issue";
+import { issue } from "./commands/issue.ts";
 
 const app = subcommands({
   name: "lr",

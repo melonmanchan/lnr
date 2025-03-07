@@ -1,8 +1,8 @@
-import path from "path";
-import os from "os";
-import config from "../config";
-import fs from "fs";
-import { execSync } from "child_process";
+import path from "node:path";
+import os from "node:os";
+import config from "../config.ts";
+import fs from "node:fs";
+import { execSync } from "node:child_process";
 
 export async function openTextEditor(initialContent = ""): Promise<string> {
   const randomHash = Math.random().toString(36).substring(2, 15);

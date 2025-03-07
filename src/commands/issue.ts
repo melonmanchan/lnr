@@ -11,11 +11,11 @@ import {
 
 import Enquirer from "enquirer";
 
-import client from "../linear/client";
-import config from "../config";
-import { printTable } from "../console/print";
-import truncate from "../utils/truncate";
-import { openTextEditor } from "../console/editor";
+import client from "../linear/client.ts";
+import config from "../config.ts";
+import { printTable } from "../console/print.ts";
+import truncate from "../utils/truncate.ts";
+import { openTextEditor } from "../console/editor.ts";
 
 const issueStates = [
   "started",
