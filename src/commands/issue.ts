@@ -15,6 +15,8 @@ import client from "../linear/client";
 import config from "../config";
 import { printTable } from "../console/print";
 import truncate from "../utils/truncate";
+import { openInEditor } from "bun";
+import { openTextEditor } from "../console/editor";
 
 const issueStates = [
   "started",
@@ -139,15 +141,17 @@ const create = command({
     }
 
     const projectsPromise = getOwnProjects();
-    const titlePrompt = new Enquirer<{ title: string }>();
 
-    const newTitle = title
-      ? { title }
-      : await titlePrompt.prompt({
-          type: "input",
-          name: "title",
-          message: "Issue title",
-        });
+    if (!title) {
+      const titlePrompt = new Enquirer<{ title: string }>();
+      const newTitle = await titlePrompt.prompt({
+        type: "input",
+        name: "title",
+        message: "Issue title",
+      });
+
+      title = newTitle.title;
+    }
 
     const projects = await projectsPromise;
 
@@ -174,13 +178,21 @@ const create = command({
       const makeDescription = await makeDescriptionPrompt.prompt({
         type: "input",
         name: "makeDescription",
-        message: "Body: (e to launch $EDITOR, enter to skip)",
+        message: `Body: (e to launch ${config.EDITOR}, enter to skip)`,
       });
 
       if (makeDescription.makeDescription === "e") {
-        console.log(1);
+        const editorDescription = await openTextEditor();
+        description = editorDescription;
       }
     }
+
+    console.log({
+      teamId: config.TEAM_ID,
+      description,
+      projectId: newProject.project,
+      title,
+    });
 
     // const payload = await client.createIssue({
     //   teamId: config.TEAM_ID,
