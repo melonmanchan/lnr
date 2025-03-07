@@ -3,8 +3,8 @@
   "module": "src/index.ts",
   "type": "module",
   "private": true,
-  "devDependencies": {
-    "tsx": "^4.19.3"
+  "scripts": {
+    "start": "tsx src/index.ts"
   },
   "peerDependencies": {
     "typescript": "^5"

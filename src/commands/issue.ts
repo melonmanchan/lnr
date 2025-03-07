@@ -186,23 +186,16 @@ const create = command({
       }
     }
 
-    console.log({
-      teamId: config.TEAM_ID,
-      description,
-      projectId: newProject.project,
-      title,
-    });
+    // const response = await client.createIssue({
+    //   teamId: config.TEAM_ID,
+    //   description,
+    //   projectId: project,
+    //   title,
+    // });
 
-    const response = await client.createIssue({
-      teamId: config.TEAM_ID,
-      description,
-      projectId: project,
-      title,
-    });
+    // const newIssue = await response.issue;
 
-    const newIssue = await response.issue;
-
-    console.log(`Issue ${newIssue?.identifier} created`, newIssue?.url);
+    // console.log(`Issue ${newIssue?.identifier} created`, newIssue?.url);
   },
 });
 
