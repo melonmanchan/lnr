@@ -4,7 +4,7 @@ import config from "../config.ts";
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 
-export async function openTextEditor(initialContent = ""): Promise<string> {
+export function openTextEditor(initialContent = ""): string {
   const randomHash = Math.random().toString(36).substring(2, 15);
 
   const fileName = `issue-description-${randomHash}.md`;
