@@ -15,7 +15,6 @@ import client from "../linear/client";
 import config from "../config";
 import { printTable } from "../console/print";
 import truncate from "../utils/truncate";
-import { openInEditor } from "bun";
 import { openTextEditor } from "../console/editor";
 
 const issueStates = [
@@ -194,12 +193,16 @@ const create = command({
       title,
     });
 
-    // const payload = await client.createIssue({
-    //   teamId: config.TEAM_ID,
-    //   description,
-    //   projectId: project,
-    //   title,
-    // });
+    const response = await client.createIssue({
+      teamId: config.TEAM_ID,
+      description,
+      projectId: project,
+      title,
+    });
+
+    const newIssue = await response.issue;
+
+    console.log(`Issue ${newIssue?.identifier} created`, newIssue?.url);
   },
 });
 
