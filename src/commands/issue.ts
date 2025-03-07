@@ -106,6 +106,12 @@ const create = command({
       short: "t",
       description: "Issue title",
     }),
+    description: option({
+      type: optional(string),
+      long: "description",
+      short: "d",
+      description: "Issue description",
+    }),
     project: option({
       type: optional(string),
       long: "project",
@@ -113,27 +119,26 @@ const create = command({
       description: "Project",
     }),
   },
-  handler: async ({ title, project }) => {
-    const me = await client.viewer;
-    const teams = await me.teams();
+  handler: async ({ title, project, description }) => {
+    // Start loading projects in the background
+    async function getOwnProjects() {
+      const me = await client.viewer;
+      const myTeams = await me.teams();
 
-    const projects = (
-      await Promise.all(
-        teams.nodes.map(async (t) => {
-          const p = await t.projects();
+      const projects = await client.projects({
+        filter: {
+          accessibleTeams: {
+            id: {
+              in: myTeams.nodes.map((t) => t.id),
+            },
+          },
+        },
+      });
 
-          return p.nodes;
-        }),
-      )
-    ).flat();
+      return projects;
+    }
 
-    const projectChoices = projects.map((p) => {
-      return {
-        name: `${p.name}`,
-        value: p.id,
-      };
-    });
-
+    const projectsPromise = getOwnProjects();
     const titlePrompt = new Enquirer<{ title: string }>();
 
     const newTitle = title
@@ -144,22 +149,42 @@ const create = command({
           message: "Issue title",
         });
 
+    const projects = await projectsPromise;
+
+    const projectChoices = projects.nodes.map((p) => {
+      return {
+        name: `${p.name}`,
+        value: p.id,
+      };
+    });
+
     const projectPrompt = new Enquirer<{ project: string }>();
 
-    const newProject = project
-      ? { project }
-      : await projectPrompt.prompt({
-          type: "autocomplete",
-          name: "project",
-          message: "Select a project",
-          choices: projectChoices,
-        });
+    // TODO: Allow passing project from command line
+    const newProject = await projectPrompt.prompt({
+      type: "autocomplete",
+      name: "project",
+      message: "Select a project",
+      choices: projectChoices,
+    });
 
-    console.log(newProject.project);
+    if (!description) {
+      const makeDescriptionPrompt = new Enquirer<{ makeDescription: string }>();
+
+      const makeDescription = await makeDescriptionPrompt.prompt({
+        type: "input",
+        name: "makeDescription",
+        message: "Body: (e to launch $EDITOR, enter to skip)",
+      });
+
+      if (makeDescription.makeDescription === "e") {
+        console.log(1);
+      }
+    }
 
     // const payload = await client.createIssue({
     //   teamId: config.TEAM_ID,
-
+    //   description,
     //   projectId: project,
     //   title,
     // });
