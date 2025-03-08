@@ -221,13 +221,32 @@ const create = command({
       })
     ).addLabel;
 
+    const labelIds: string[] = [];
+
     if (addLabel) {
-      process.exit(0);
+      const teamLabels = await defaultTeam.labels();
+
+      const pickLabelsPrompt = new Enquirer<{ labelIds: string[] }>();
+
+      const newLabels = await pickLabelsPrompt.prompt({
+        type: "multiselect",
+        name: "labelIds",
+        message: "Select a label",
+        choices: teamLabels.nodes.map((l) => {
+          return {
+            name: l.name,
+            value: l.id,
+          };
+        }),
+      });
+
+      labelIds.push(...newLabels.labelIds);
     }
 
     const defaultTeamState = await defaultTeam.defaultIssueState;
 
     const response = await client.createIssue({
+      labelIds,
       teamId: defaultTeam.id,
       stateId: defaultTeamState?.id,
       description,
