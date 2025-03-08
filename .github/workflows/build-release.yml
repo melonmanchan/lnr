@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: "Compile for platform $ {{matrix.target}} and add to release"
+    name: "Compile for platform ${{matrix.target}} and add to release"
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
