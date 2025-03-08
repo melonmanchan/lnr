@@ -9,7 +9,13 @@ jobs:
     strategy:
       matrix:
         target:
-          ["linux-64", "linux-arm64", "macos-x64", "macos-arm64", "windows-x64"]
+          [
+            "linux-x64",
+            "linux-arm64",
+            "macos-x64",
+            "macos-arm64",
+            "windows-x64",
+          ]
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -18,6 +24,9 @@ jobs:
         uses: denoland/setup-deno@v1
         with:
           deno-version: v2.x
+
+      - name: Install dependancies
+        run: deno install
 
       - name: Compile for ${{ matrix.target }}
         run: deno run compile:${{ matrix.target}}
