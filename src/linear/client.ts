@@ -1,3 +1,5 @@
+import process from "node:process";
+
 import { LinearClient, type LinearClientOptions } from "@linear/sdk";
 
 const LINEAR_API_KEY = process.env.LINEAR_API_KEY;

@@ -12,6 +12,8 @@ import {
 import Enquirer from "enquirer";
 
 import client from "../linear/client.ts";
+import { self } from "../linear/promises.ts";
+
 import config from "../config.ts";
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
@@ -52,7 +54,7 @@ const list = command({
   },
 
   handler: async ({ state, assignee }) => {
-    const me = await client.viewer;
+    const me = await self;
 
     const stateFilter =
       state.length === 0
@@ -119,7 +121,8 @@ const create = command({
   handler: async ({ title, description }) => {
     // Start loading projects in the background
     async function fetchOwnProjectsAndTeams(): Promise<[Team[], Project[]]> {
-      const me = await client.viewer;
+      const me = await self;
+
       const myTeams = await me.teams();
 
       const projects = await client.projects({
