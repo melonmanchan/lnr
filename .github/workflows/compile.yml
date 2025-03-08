@@ -1,0 +1,30 @@
+name: Cross-compile with Deno 2 (Matrix)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          ["linux-64", "linux-arm64", "macos-x64", "macos-arm64", "windows-x64"]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Deno (v2)
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+
+      - name: Compile for ${{ matrix.target }}
+        run: |
+          deno run compile:${{ matrix.target}}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lr-${{ matrix.target }}
+          path: dist

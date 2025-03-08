@@ -1,5 +1,15 @@
 {
+  "env": {
+    "COMMON_FLAGS": "--allow-env --allow-net --allow-write --allow-read --allow-run"
+  },
+
   "tasks": {
+    "compile:linux-x64": "deno compile $COMMON_FLAGS --target x86_64-unknown-linux-gnu -o dist/linux-x64/lr src/index.ts",
+    "compile:linux-arm64": "deno compile $COMMON_FLAGS --target aarch64-unknown-linux-gnu -o dist/linux-arm64/lr src/index.ts",
+    "compile:macos-x64": "deno compile $COMMON_FLAGS --target x86_64-apple-darwin -o dist/macos-x64/lr src/index.ts",
+    "compile:macos:arm64": "deno compile $COMMON_FLAGS --target aarch64-apple-darwin -o dist/macos-arm64/lr src/index.ts",
+    "compile:windows:x64": "deno compile $COMMON_FLAGS --target x86_64-pc-windows-msvc -o dist/windows-x64/lr.exe src/index.ts",
+
     "start": "deno run --allow-env --allow-net --allow-write --allow-read --allow-run src/index.ts",
     "build": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run -o dist/lr src/index.ts"
   },
