@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "check": " deno check src/**/*.ts",
     "start": "tsx src/index.ts"
   },
   "peerDependencies": {
@@ -11,6 +12,7 @@
   },
   "dependencies": {
     "@linear/sdk": "^38.0.0",
+    "@types/node": "^22.13.10",
     "cli-table3": "^0.6.5",
     "cmd-ts": "^0.13.0",
     "enquirer": "^2.4.1"
