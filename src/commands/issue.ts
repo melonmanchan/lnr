@@ -16,6 +16,7 @@ import config from "../config.ts";
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
+import { Project, Team } from "@linear/sdk";
 
 const issueStates = [
   "started",
@@ -122,7 +123,7 @@ const create = command({
   },
   handler: async ({ title, project, description }) => {
     // Start loading projects in the background
-    async function getOwnProjects() {
+    async function fetchOwnProjectsAndTeams(): Promise<[Team[], Project[]]> {
       const me = await client.viewer;
       const myTeams = await me.teams();
 
@@ -136,10 +137,10 @@ const create = command({
         },
       });
 
-      return projects;
+      return [myTeams.nodes, projects.nodes];
     }
 
-    const projectsPromise = getOwnProjects();
+    const projectsPromise = fetchOwnProjectsAndTeams();
 
     if (!title) {
       const titlePrompt = new Enquirer<{ title: string }>();
@@ -152,24 +153,52 @@ const create = command({
       title = newTitle.title;
     }
 
-    const projects = await projectsPromise;
+    const [myTeams, projects] = await projectsPromise;
 
-    const projectChoices = projects.nodes.map((p) => {
-      return {
-        name: `${p.name}`,
-        value: p.id,
-      };
-    });
+    let teamId = myTeams[0].id;
 
-    const projectPrompt = new Enquirer<{ project: string }>();
+    // TODO: Some default logic here?
+    if (myTeams.length > 1) {
+      const teamChoices = myTeams.map((t: Team) => {
+        return {
+          name: `${t.name}`,
+          value: t.id,
+        };
+      });
 
-    // TODO: Allow passing project from command line
-    const newProject = await projectPrompt.prompt({
-      type: "autocomplete",
-      name: "project",
-      message: "Select a project",
-      choices: projectChoices,
-    });
+      const teamPrompt = new Enquirer<{ teamId: string }>();
+
+      // TODO: Allow passing project from command line
+      const newTeam = await teamPrompt.prompt({
+        type: "autocomplete",
+        name: "teamId",
+        message: "Select a team",
+        choices: teamChoices,
+      });
+
+      teamId = newTeam.teamId;
+    }
+
+    if (!project) {
+      const projectChoices = projects.map((p: Project) => {
+        return {
+          name: `${p.name}`,
+          value: p.id,
+        };
+      });
+
+      const projectPrompt = new Enquirer<{ project: string }>();
+
+      // TODO: Allow passing project from command line
+      const newProject = await projectPrompt.prompt({
+        type: "autocomplete",
+        name: "project",
+        message: "Select a project",
+        choices: projectChoices,
+      });
+
+      project = newProject.project;
+    }
 
     if (!description) {
       const makeDescriptionPrompt = new Enquirer<{ makeDescription: string }>();
@@ -181,21 +210,22 @@ const create = command({
       });
 
       if (makeDescription.makeDescription === "e") {
-        const editorDescription = await openTextEditor();
+        const editorDescription = openTextEditor();
+
         description = editorDescription;
       }
     }
 
-    // const response = await client.createIssue({
-    //   teamId: config.TEAM_ID,
-    //   description,
-    //   projectId: project,
-    //   title,
-    // });
+    const response = await client.createIssue({
+      teamId,
+      description,
+      projectId: project,
+      title,
+    });
 
-    // const newIssue = await response.issue;
+    const newIssue = await response.issue;
 
-    // console.log(`Issue ${newIssue?.identifier} created`, newIssue?.url);
+    console.log(`Issue ${newIssue?.identifier} created`, newIssue?.url);
   },
 });
 
