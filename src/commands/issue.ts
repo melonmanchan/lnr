@@ -115,14 +115,8 @@ const create = command({
       short: "d",
       description: "Issue description",
     }),
-    project: option({
-      type: optional(string),
-      long: "project",
-      short: "-p",
-      description: "Project",
-    }),
   },
-  handler: async ({ title, project: projectId, description }) => {
+  handler: async ({ title, description }) => {
     // Start loading projects in the background
     async function fetchOwnProjectsAndTeams(): Promise<[Team[], Project[]]> {
       const me = await client.viewer;
@@ -180,26 +174,26 @@ const create = command({
       defaultTeam = myTeams.find((t) => t.id === newTeam.teamId) as Team;
     }
 
-    if (!projectId) {
-      const projectChoices = projects.map((p: Project) => {
-        return {
-          name: `${p.name}`,
-          value: p.id,
-        };
-      });
+    const projectChoices = projects.map((p: Project) => {
+      return {
+        name: `${p.name}`,
+        value: p.id,
+      };
+    });
 
-      const projectPrompt = new Enquirer<{ projectId: string }>();
+    const projectPrompt = new Enquirer<{ projectId: string }>();
 
-      // TODO: Allow passing project from command line
-      const newProject = await projectPrompt.prompt({
-        type: "autocomplete",
-        name: "projectId",
-        message: "Select a project",
-        choices: projectChoices,
-      });
+    // TODO: Allow passing project from command line
+    const newProject = await projectPrompt.prompt({
+      type: "autocomplete",
+      name: "projectId",
+      message: "Select a project",
+      choices: projectChoices,
+    });
 
-      projectId = newProject.projectId;
-    }
+    const project = projects.find(
+      (p) => p.id === newProject.projectId,
+    ) as Project;
 
     if (!description) {
       const makeDescriptionPrompt = new Enquirer<{ makeDescription: string }>();
@@ -231,24 +225,20 @@ const create = command({
       process.exit(0);
     }
 
-    process.exit(0);
-
     const defaultTeamState = await defaultTeam.defaultIssueState;
 
     const response = await client.createIssue({
       teamId: defaultTeam.id,
       stateId: defaultTeamState?.id,
       description,
-      projectId: projectId,
+      projectId: project?.id,
       title,
     });
 
     const newIssue = await response.issue;
 
-    const projectName = projects.find((p) => p.id === projectId)?.name;
-
     console.log(
-      `Created issue ${newIssue?.identifier} for project ${projectName} in state "${defaultTeamState?.name}"`,
+      `Created issue ${newIssue?.identifier} for project ${project.name} in state "${defaultTeamState?.name}"`,
     );
 
     console.log(newIssue?.url);
