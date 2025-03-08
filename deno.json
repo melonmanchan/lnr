@@ -2,7 +2,6 @@
   "env": {
     "COMMON_FLAGS": "--allow-env --allow-net --allow-write --allow-read --allow-run"
   },
-
   "tasks": {
     "compile:linux-x64": "deno compile $COMMON_FLAGS --target x86_64-unknown-linux-gnu -o dist/linux-x64/lr src/index.ts",
     "compile:linux-arm64": "deno compile $COMMON_FLAGS --target aarch64-unknown-linux-gnu -o dist/linux-arm64/lr src/index.ts",
