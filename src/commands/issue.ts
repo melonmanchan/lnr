@@ -156,7 +156,7 @@ const create = command({
 
     const [myTeams, projects] = await projectsPromise;
 
-    let teamId = myTeams[0].id;
+    let defaultTeam = myTeams[0];
 
     // TODO: Some default logic here?
     if (myTeams.length > 1) {
@@ -177,7 +177,7 @@ const create = command({
         choices: teamChoices,
       });
 
-      teamId = newTeam.teamId;
+      defaultTeam = myTeams.find((t) => t.id === newTeam.teamId) as Team;
     }
 
     if (!projectId) {
@@ -217,8 +217,11 @@ const create = command({
       }
     }
 
+    const defaultTeamState = await defaultTeam.defaultIssueState;
+
     const response = await client.createIssue({
-      teamId,
+      teamId: defaultTeam.id,
+      stateId: defaultTeamState?.id,
       description,
       projectId: projectId,
       title,
@@ -226,12 +229,10 @@ const create = command({
 
     const newIssue = await response.issue;
 
-    const createdState = await newIssue?.state;
-
     const projectName = projects.find((p) => p.id === projectId)?.name;
 
     console.log(
-      `Created issue ${newIssue?.identifier} for project ${projectName} in state "${createdState?.name}"`,
+      `Created issue ${newIssue?.identifier} for project ${projectName} in state "${defaultTeamState?.name}"`,
     );
 
     console.log(newIssue?.url);
