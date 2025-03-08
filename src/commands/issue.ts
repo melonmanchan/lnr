@@ -17,6 +17,7 @@ import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
 import { Project, Team } from "@linear/sdk";
+import process from "node:process";
 
 const issueStates = [
   "started",
@@ -121,7 +122,7 @@ const create = command({
       description: "Project",
     }),
   },
-  handler: async ({ title, project, description }) => {
+  handler: async ({ title, project: projectId, description }) => {
     // Start loading projects in the background
     async function fetchOwnProjectsAndTeams(): Promise<[Team[], Project[]]> {
       const me = await client.viewer;
@@ -179,7 +180,7 @@ const create = command({
       teamId = newTeam.teamId;
     }
 
-    if (!project) {
+    if (!projectId) {
       const projectChoices = projects.map((p: Project) => {
         return {
           name: `${p.name}`,
@@ -187,17 +188,17 @@ const create = command({
         };
       });
 
-      const projectPrompt = new Enquirer<{ project: string }>();
+      const projectPrompt = new Enquirer<{ projectId: string }>();
 
       // TODO: Allow passing project from command line
       const newProject = await projectPrompt.prompt({
         type: "autocomplete",
-        name: "project",
+        name: "projectId",
         message: "Select a project",
         choices: projectChoices,
       });
 
-      project = newProject.project;
+      projectId = newProject.projectId;
     }
 
     if (!description) {
@@ -219,15 +220,23 @@ const create = command({
     const response = await client.createIssue({
       teamId,
       description,
-      projectId: project,
+      projectId: projectId,
       title,
     });
 
     const newIssue = await response.issue;
 
-    console.log(`Created issue ${newIssue?.identifier}`);
+    const createdState = await newIssue?.state;
+
+    const projectName = projects.find((p) => p.id === projectId)?.name;
+
+    console.log(
+      `Created issue ${newIssue?.identifier} for project ${projectName} in state "${createdState?.name}"`,
+    );
 
     console.log(newIssue?.url);
+
+    process.exit(0);
   },
 });
 
