@@ -11,7 +11,7 @@ import {
 
 import Enquirer from "enquirer";
 
-import getLinearClient from "../linear/client.ts";
+import { getLinearClient } from "../linear/client.ts";
 
 import config from "../config.ts";
 import { printTable } from "../console/print.ts";
@@ -119,9 +119,10 @@ const create = command({
     }),
   },
   handler: async ({ title, description }) => {
+    const client = getLinearClient()!;
+
     // Start loading projects in the background
     async function fetchOwnProjectsAndTeams(): Promise<[Team[], Project[]]> {
-      const client = getLinearClient()!;
       const me = await client.viewer;
       const myTeams = await me.teams();
 

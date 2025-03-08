@@ -10,13 +10,18 @@ const options: LinearClientOptions = {
   accessToken: LINEAR_OAUTH_TOKEN,
 };
 
+const linearInitialized = () => {
+  return options.apiKey || options.accessToken;
+};
+
 const getLinearClient = () => {
-  if (!options.apiKey && !options.accessToken) {
+  if (!linearInitialized()) {
     return null;
   }
+
   const client = new LinearClient(options);
 
   return client;
 };
 
-export default getLinearClient;
+export { getLinearClient, linearInitialized };
