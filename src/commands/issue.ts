@@ -225,7 +225,9 @@ const create = command({
 
     const newIssue = await response.issue;
 
-    console.log(`Issue ${newIssue?.identifier} created`, newIssue?.url);
+    console.log(`Created issue ${newIssue?.identifier}`);
+
+    console.log(newIssue?.url);
   },
 });
 
