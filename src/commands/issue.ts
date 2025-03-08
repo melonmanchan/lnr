@@ -217,42 +217,44 @@ const create = command({
       }
     }
 
-    const labelPrompt = new Enquirer<{ addLabel: boolean }>();
+    // TODO
+    // const labelPrompt = new Enquirer<{ addLabel: boolean }>();
+    // const addLabel = (
+    //   await labelPrompt.prompt({
+    //     type: "confirm",
+    //     name: "addLabel",
+    //     message: "Add labels?",
+    //   })
+    // ).addLabel;
 
-    const addLabel = (
-      await labelPrompt.prompt({
-        type: "confirm",
-        name: "addLabel",
-        message: "Add labels?",
-      })
-    ).addLabel;
+    // const labelIds: string[] = [];
 
-    const labelIds: string[] = [];
+    // if (addLabel) {
+    //   const teamLabels = await defaultTeam.labels();
 
-    if (addLabel) {
-      const teamLabels = await defaultTeam.labels();
+    //   const pickLabelsPrompt = new Enquirer<{ labelIds: string[] }>();
 
-      const pickLabelsPrompt = new Enquirer<{ labelIds: string[] }>();
+    //   const newLabels = await pickLabelsPrompt.prompt({
+    //     type: "multiselect",
+    //     name: "labelIds",
+    //     message: "Select a label",
+    //     choices: teamLabels.nodes.map((l) => {
+    //       return {
+    //         name: l.name,
+    //         value: l.id,
+    //       };
+    //     }),
+    //   });
 
-      const newLabels = await pickLabelsPrompt.prompt({
-        type: "multiselect",
-        name: "labelIds",
-        message: "Select a label",
-        choices: teamLabels.nodes.map((l) => {
-          return {
-            name: l.name,
-            value: l.id,
-          };
-        }),
-      });
-
-      labelIds.push(...newLabels.labelIds);
-    }
+    //   labelIds.push(...newLabels.labelIds);
+    // }
 
     const defaultTeamState = await defaultTeam.defaultIssueState;
 
+    process.exit(0);
+
     const response = await client.createIssue({
-      labelIds,
+      labelIds: [],
       teamId: defaultTeam.id,
       stateId: defaultTeamState?.id,
       description,
