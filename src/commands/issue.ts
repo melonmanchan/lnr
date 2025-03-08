@@ -9,6 +9,8 @@ import {
   optional,
 } from "cmd-ts";
 
+import chalk from "chalk";
+
 import Enquirer from "enquirer";
 
 import { getLinearClient } from "../linear/client.ts";
@@ -261,7 +263,7 @@ const create = command({
     const newIssue = await response.issue;
 
     console.log(
-      `Created issue ${newIssue?.identifier} for project ${project.name} in state "${defaultTeamState?.name}"`,
+      `Created issue ${chalk.bold(newIssue?.identifier)} for project ${chalk.bold(project?.name)}`,
     );
 
     console.log(newIssue?.url);
