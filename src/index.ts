@@ -1,3 +1,4 @@
+import process from "node:process";
 import { run, subcommands } from "cmd-ts";
 import { issue } from "./commands/issue.ts";
 
