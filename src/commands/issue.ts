@@ -217,6 +217,22 @@ const create = command({
       }
     }
 
+    const labelPrompt = new Enquirer<{ addLabel: boolean }>();
+
+    const addLabel = (
+      await labelPrompt.prompt({
+        type: "confirm",
+        name: "addLabel",
+        message: "Add labels?",
+      })
+    ).addLabel;
+
+    if (addLabel) {
+      process.exit(0);
+    }
+
+    process.exit(0);
+
     const defaultTeamState = await defaultTeam.defaultIssueState;
 
     const response = await client.createIssue({
