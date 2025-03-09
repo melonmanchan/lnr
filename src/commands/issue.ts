@@ -251,8 +251,6 @@ const create = command({
 
     const defaultTeamState = await defaultTeam.defaultIssueState;
 
-    process.exit(0);
-
     const response = await client.createIssue({
       labelIds: [],
       teamId: defaultTeam.id,

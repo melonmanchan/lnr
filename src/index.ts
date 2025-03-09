@@ -1,6 +1,7 @@
 import process from "node:process";
 import { run, subcommands } from "cmd-ts";
 import { issue } from "./commands/issue.ts";
+import { auth } from "./commands/auth.ts";
 import { linearInitialized } from "./linear/client.ts";
 
 import packageJson from "../package.json" with { type: "json" };
@@ -13,7 +14,7 @@ if (!linearInitialized()) {
 const app = subcommands({
   version: packageJson.version,
   name: "lr",
-  cmds: { issue },
+  cmds: { issue, auth },
 });
 
 run(app, process.argv.slice(2));
