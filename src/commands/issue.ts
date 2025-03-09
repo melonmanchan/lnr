@@ -21,6 +21,7 @@ import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
 import { Project, Team } from "@linear/sdk";
 import process from "node:process";
+import { getConfig } from "../config/config.ts";
 
 const issueStates = [
   "started",
@@ -55,7 +56,9 @@ const list = command({
   },
 
   handler: async ({ state, assignee }) => {
-    const client = getLinearClient()!;
+    const config = await getConfig();
+    const client = getLinearClient(config.linearApiKey);
+
     const me = await client.viewer;
 
     const stateFilter =
@@ -121,7 +124,8 @@ const create = command({
     }),
   },
   handler: async ({ title, description }) => {
-    const client = getLinearClient()!;
+    const config = await getConfig();
+    const client = getLinearClient(config.linearApiKey);
 
     // Start loading projects in the background
     async function fetchOwnProjectsAndTeams(): Promise<[Team[], Project[]]> {
@@ -204,18 +208,14 @@ const create = command({
     if (!description) {
       const makeDescriptionPrompt = new Enquirer<{ makeDescription: string }>();
 
-      const config = {
-        EDITOR: "hx",
-      };
-
       const makeDescription = await makeDescriptionPrompt.prompt({
         type: "input",
         name: "makeDescription",
-        message: `Body: (e to launch ${config.EDITOR}, enter to skip)`,
+        message: `Body: (e to launch ${config.editor}, enter to skip)`,
       });
 
       if (makeDescription.makeDescription === "e") {
-        const editorDescription = openTextEditor();
+        const editorDescription = openTextEditor(config.editor);
 
         description = editorDescription;
       }
