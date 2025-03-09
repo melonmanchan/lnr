@@ -11,7 +11,7 @@ import {
 
 import chalk from "chalk";
 
-import Enquirer from "enquirer";
+import enquirer from "enquirer";
 
 import { getLinearClient } from "../linear/client.ts";
 
@@ -147,8 +147,7 @@ const create = command({
     const projectsPromise = fetchOwnProjectsAndTeams();
 
     if (!title) {
-      const titlePrompt = new Enquirer<{ title: string }>();
-      const newTitle = await titlePrompt.prompt({
+      const newTitle = await enquirer.prompt<{ title: string }>({
         type: "input",
         name: "title",
         message: "Issue title",
@@ -170,10 +169,8 @@ const create = command({
         };
       });
 
-      const teamPrompt = new Enquirer<{ teamId: string }>();
-
       // TODO: Allow passing project from command line
-      const newTeam = await teamPrompt.prompt({
+      const newTeam = await enquirer.prompt<{ teamId: string }>({
         type: "autocomplete",
         name: "teamId",
         message: "Select a team",
@@ -190,10 +187,8 @@ const create = command({
       };
     });
 
-    const projectPrompt = new Enquirer<{ projectId: string }>();
-
     // TODO: Allow passing project from command line
-    const newProject = await projectPrompt.prompt({
+    const newProject = await enquirer.prompt<{ projectId: string }>({
       type: "autocomplete",
       name: "projectId",
       message: "Select a project",
@@ -205,9 +200,9 @@ const create = command({
     ) as Project;
 
     if (!description) {
-      const makeDescriptionPrompt = new Enquirer<{ makeDescription: string }>();
-
-      const makeDescription = await makeDescriptionPrompt.prompt({
+      const makeDescription = await enquirer.prompt<{
+        makeDescription: string;
+      }>({
         type: "input",
         name: "makeDescription",
         message: `Body: (e to launch ${config.editor}, enter to skip)`,

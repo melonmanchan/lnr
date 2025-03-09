@@ -1,5 +1,4 @@
 import enquirer from "enquirer";
-import { LinearClient } from "@linear/sdk";
 import { command, subcommands } from "cmd-ts";
 import process from "node:process";
 import open from "open";
