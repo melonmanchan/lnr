@@ -1,6 +1,6 @@
 import path from "node:path";
 import os from "node:os";
-import config from "../config.ts";
+// import config from "../config.ts";
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 
@@ -13,7 +13,7 @@ export function openTextEditor(initialContent = ""): string {
 
   fs.writeFileSync(tmpFileName, initialContent, "utf8");
 
-  const editor = config.EDITOR;
+  const editor = "hx";
 
   execSync(`${editor} "${tmpFileName}"`, { stdio: "inherit" });
 

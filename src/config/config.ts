@@ -17,6 +17,17 @@ export const ConfigSchemaV1 = z.object({
 
 export type ConfigSchemaV1 = z.infer<typeof ConfigSchemaV1>;
 
+export async function configExists(): Promise<boolean> {
+  const configPath = getConfigPath();
+
+  try {
+    await fs.stat(configPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function readConfig(): Promise<ConfigSchemaV1 | null> {
   try {
     const configPath = getConfigPath();

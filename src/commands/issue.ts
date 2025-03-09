@@ -15,7 +15,7 @@ import Enquirer from "enquirer";
 
 import { getLinearClient } from "../linear/client.ts";
 
-import config from "../config.ts";
+// import config from "../config.ts";
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
@@ -203,6 +203,10 @@ const create = command({
 
     if (!description) {
       const makeDescriptionPrompt = new Enquirer<{ makeDescription: string }>();
+
+      const config = {
+        EDITOR: "hx",
+      };
 
       const makeDescription = await makeDescriptionPrompt.prompt({
         type: "input",
