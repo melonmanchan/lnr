@@ -8,7 +8,8 @@
     "npm:chalk@^5.4.1": "5.4.1",
     "npm:cli-table3@~0.6.5": "0.6.5",
     "npm:cmd-ts@0.13": "0.13.0",
-    "npm:enquirer@^2.4.1": "2.4.1"
+    "npm:enquirer@^2.4.1": "2.4.1",
+    "npm:zod@^3.24.2": "3.24.2"
   },
   "jsr": {
     "@std/assert@1.0.11": {
@@ -174,6 +175,9 @@
         "tr46",
         "webidl-conversions"
       ]
+    },
+    "zod@3.24.2": {
+      "integrity": "sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ=="
     }
   },
   "workspace": {
@@ -187,7 +191,8 @@
         "npm:chalk@^5.4.1",
         "npm:cli-table3@~0.6.5",
         "npm:cmd-ts@0.13",
-        "npm:enquirer@^2.4.1"
+        "npm:enquirer@^2.4.1",
+        "npm:zod@^3.24.2"
       ]
     }
   }
