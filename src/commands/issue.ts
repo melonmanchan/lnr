@@ -15,7 +15,6 @@ import Enquirer from "enquirer";
 
 import { getLinearClient } from "../linear/client.ts";
 
-// import config from "../config.ts";
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";

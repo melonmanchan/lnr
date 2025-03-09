@@ -1,8 +1,10 @@
 import enquirer from "enquirer";
+import { LinearClient } from "@linear/sdk";
 import { command, subcommands } from "cmd-ts";
 import process from "node:process";
 import open from "open";
 import { ConfigSchemaV1, saveConfig } from "../config/config.ts";
+import { getLinearClient } from "../linear/client.ts";
 
 const AUTH_URL = "https://linear.app/settings/account/security";
 
@@ -36,6 +38,17 @@ const login = command({
       linearApiKey,
       editor: process.env.EDITOR ?? "",
     };
+
+    const testClient = getLinearClient(linearApiKey);
+    try {
+      await testClient.viewer;
+    } catch {
+      console.error(
+        "Unable to authenticate with Linear. Please check your API key and try again.",
+      );
+
+      process.exit(-1);
+    }
 
     await saveConfig(newConfig);
 
