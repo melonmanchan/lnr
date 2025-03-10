@@ -14,6 +14,7 @@ import chalk from "chalk";
 import enquirer from "enquirer";
 
 import { getLinearClient } from "../linear/client.ts";
+import { paginatedLinearRequest } from "../linear/paginatedLinearRequest.ts";
 
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
@@ -21,6 +22,7 @@ import { openTextEditor } from "../console/editor.ts";
 import { Issue, Project, Team } from "@linear/sdk";
 import process from "node:process";
 import { getConfig } from "../config/config.ts";
+import type { IssuesQueryVariables } from "@linear/sdk/dist/_generated_documents.d.ts";
 
 const issueStates = [
   "canceled",
@@ -73,7 +75,10 @@ const list = command({
     const issues: Issue[] = [];
 
     if (project) {
-      const projectIssues = await client.issues({
+      const projectSpecificIssues = await paginatedLinearRequest<
+        Issue,
+        IssuesQueryVariables
+      >((variables) => client.issues(variables), {
         filter: {
           ...stateFilter,
 
@@ -94,7 +99,7 @@ const list = command({
         },
       });
 
-      issues.push(...projectIssues.nodes);
+      issues.push(...projectSpecificIssues);
     } else {
       const globalIssues =
         assignee === "@me"
@@ -117,6 +122,7 @@ const list = command({
 
     const mappedIssues = await Promise.all(
       issues.map(async (i) => {
+        // TODO: Might wanna do custom graphql queries here to avoid the multifetch here
         const [assignee, state] = await Promise.all([i.assignee, i.state]);
         return {
           ID: `[${i.identifier}]`,
