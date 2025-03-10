@@ -14,19 +14,13 @@ export const ConfigSchemaV1 = z.object({
   linearApiKey: z.string(),
 
   editor: z.preprocess((val) => {
-    if (val) {
-      return val;
-    }
-
     const envEditor = process.env.EDITOR;
 
-    if (!envEditor) {
-      throw new Error(
-        "Editor is not provided in the config and $EDITOR is not set.",
-      );
+    if (val === "$EDITOR" && envEditor) {
+      return envEditor;
     }
 
-    return envEditor;
+    return val;
   }, z.string()),
 });
 

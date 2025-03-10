@@ -35,7 +35,7 @@ const login = command({
     const newConfig: ConfigSchemaV1 = {
       version: 1,
       linearApiKey,
-      editor: process.env.EDITOR ?? "",
+      editor: "$EDITOR",
     };
 
     const testClient = getLinearClient(linearApiKey);
