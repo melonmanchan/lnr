@@ -59,5 +59,6 @@ const login = command({
 
 export const auth = subcommands({
   name: "auth",
+  description: "Authenticate with Linear",
   cmds: { login },
 });

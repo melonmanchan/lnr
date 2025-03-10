@@ -9,6 +9,7 @@ import packageJson from "../package.json" with { type: "json" };
 const hasConfig = await configExists();
 
 const ARGS = process.argv.slice(2);
+
 const fullCommand = ARGS.join(" ");
 
 if (!hasConfig && fullCommand !== "auth login") {
@@ -19,6 +20,7 @@ if (!hasConfig && fullCommand !== "auth login") {
 
 const app = subcommands({
   version: packageJson.version,
+  description: "A command-line interface for Linear",
   name: "lr",
   cmds: { issue, auth },
 });

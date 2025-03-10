@@ -7,7 +7,8 @@
     "compile:windows-x64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target x86_64-pc-windows-msvc -o dist/windows-x64/lr.exe src/index.ts",
 
     "start": "deno run --allow-env --allow-net --allow-write --allow-read --allow-run src/index.ts",
-    "build": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run -o dist/lr src/index.ts"
+    "build": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run -o dist/lr src/index.ts",
+    "check": "deno check src/**/*.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1"

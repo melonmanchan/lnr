@@ -4,10 +4,6 @@
   "module": "src/index.ts",
   "type": "module",
   "private": true,
-  "scripts": {
-    "check": " deno check src/**/*.ts",
-    "start": "tsx src/index.ts"
-  },
   "peerDependencies": {
     "typescript": "^5"
   },

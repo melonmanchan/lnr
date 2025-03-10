@@ -272,5 +272,6 @@ const create = command({
 
 export const issue = subcommands({
   name: "issue",
+  description: "Invidividal issue management",
   cmds: { list, create },
 });
