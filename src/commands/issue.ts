@@ -76,6 +76,16 @@ const list = command({
       const projectIssues = await client.issues({
         filter: {
           ...stateFilter,
+
+          assignee:
+            assignee !== "@me"
+              ? {
+                  displayName: {
+                    containsIgnoreCase: assignee,
+                  },
+                }
+              : undefined,
+
           project: {
             name: {
               containsIgnoreCase: project,
@@ -95,7 +105,7 @@ const list = command({
                 ...{
                   assignee: {
                     displayName: {
-                      contains: assignee!.toLowerCase(),
+                      containsIgnoreCase: assignee,
                     },
                   },
                 },
