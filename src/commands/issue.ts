@@ -18,18 +18,17 @@ import { getLinearClient } from "../linear/client.ts";
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
-import { Project, Team } from "@linear/sdk";
+import { Issue, Project, Team } from "@linear/sdk";
 import process from "node:process";
 import { getConfig } from "../config/config.ts";
 
 const issueStates = [
-  "started",
-  "completed",
   "canceled",
   "completed",
+  "started",
+  "unstarted",
   "backlog",
   "triage",
-  "unstarted",
 ];
 
 type IssueState = (typeof issueStates)[number];
@@ -52,12 +51,18 @@ const list = command({
       defaultValue: () => "@me",
       description: "assignee",
     }),
+
+    project: option({
+      type: optional(string),
+      long: "project",
+      short: "p",
+      description: "Project name",
+    }),
   },
 
-  handler: async ({ state, assignee }) => {
+  handler: async ({ state, assignee, project }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
-
     const me = await client.viewer;
 
     const stateFilter =
@@ -65,32 +70,50 @@ const list = command({
         ? { state: { type: { nin: ["completed", "canceled"] } } }
         : { state: { type: { in: state } } };
 
-    const issues =
-      assignee === "@me"
-        ? await me.assignedIssues({ filter: { ...stateFilter } })
-        : await client.issues({
-            filter: {
-              ...stateFilter,
-              ...{
-                assignee: {
-                  displayName: {
-                    contains: assignee.toLowerCase(),
+    const issues: Issue[] = [];
+
+    if (project) {
+      const projectIssues = await client.issues({
+        filter: {
+          ...stateFilter,
+          project: {
+            name: {
+              containsIgnoreCase: project,
+            },
+          },
+        },
+      });
+
+      issues.push(...projectIssues.nodes);
+    } else {
+      const globalIssues =
+        assignee === "@me"
+          ? await me.assignedIssues({ filter: { ...stateFilter } })
+          : await client.issues({
+              filter: {
+                ...stateFilter,
+                ...{
+                  assignee: {
+                    displayName: {
+                      contains: assignee!.toLowerCase(),
+                    },
                   },
                 },
               },
-            },
-          });
+            });
+
+      issues.push(...globalIssues.nodes);
+    }
 
     const mappedIssues = await Promise.all(
-      issues.nodes.map(async (i) => {
+      issues.map(async (i) => {
         const [assignee, state] = await Promise.all([i.assignee, i.state]);
         return {
           ID: `[${i.identifier}]`,
           Title: truncate(i.title, 64),
-          // Priority: i.priorityLabel,
           Status: state?.name,
           Assignee: assignee?.displayName,
-          // Updated: toRelative(new Date(i.updatedAt)),
+          _state: state?.type,
         };
       }),
     );
@@ -100,9 +123,19 @@ const list = command({
       return;
     }
 
-    console.log(`Issues assigned to ${assignee}:\n`);
+    const sortedIssues = mappedIssues.sort((a, b) => {
+      const aStatus = issueStates.indexOf(a._state!) ?? 0;
+      const bStatus = issueStates.indexOf(b._state!) ?? 0;
+      return aStatus - bStatus;
+    });
 
-    printTable(mappedIssues);
+    const message = project
+      ? `Issues in project ${chalk.bold(project)}`
+      : `Issues assigned to ${chalk.bold(assignee)}`;
+
+    console.log(message);
+
+    printTable(sortedIssues);
   },
 });
 

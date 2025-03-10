@@ -1,7 +1,8 @@
 import Table from "cli-table3";
 
 export function printTable(values: any[]) {
-  const keys = Object.keys(values[0]);
+  // Filter out keys that begin with "_"
+  const keys = Object.keys(values[0]).filter((key) => !key.startsWith("_"));
 
   const table = new Table({
     head: keys,
