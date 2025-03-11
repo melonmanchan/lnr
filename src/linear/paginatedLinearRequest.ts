@@ -1,6 +1,6 @@
 import { Connection, LinearFetch } from "@linear/sdk";
 
-const DEFAULT_LIMIT = 50;
+const DEFAULT_LIMIT = 100;
 
 export async function paginatedLinearRequest<T, U>(
   fetchFn: (variables: U) => LinearFetch<Connection<T>>,
