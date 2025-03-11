@@ -57,14 +57,9 @@ jobs:
 
       - name: Upload to GitHub Release
         run: |
-          echo "Uploading artifacts in dist/ to release: ${{ env.TAGTOUSE }}"
-          for file in dist/*; do
-            base="$(basename "$file")"
-            zipfile="dist/${base}.zip"
-
-            echo "Zipping '$file' -> '$zipfile' ..."
-            zip -r "$zipfile" "$file"
-
-            echo "Uploading '$zipfile' to release tag '${{ env.TAGTOUSE }}' ..."
-            gh release upload "${{ env.TAGTOUSE }}" "$zipfile" --clobber
-          done
+          echo "Uploading artifacts to release: ${{ env.TAGTOUSE }}"
+          file="lr-${{matrix.target}}"
+          zipfile="$file.zip"
+          zip -r "$zipfile" "$file"
+          echo "Uploading '$zipfile' to release tag '${{ env.TAGTOUSE }}' ..."
+          gh release upload "${{ env.TAGTOUSE }}" "$zipfile" --clobber
