@@ -187,25 +187,14 @@ const create = command({
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
-    // Start loading projects in the background
-    async function fetchOwnProjectsAndTeams(): Promise<[Team[], Project[]]> {
+    async function fetchTeams(): Promise<Team[]> {
       const me = await client.viewer;
       const myTeams = await me.teams();
 
-      const projects = await client.projects({
-        filter: {
-          accessibleTeams: {
-            id: {
-              in: myTeams.nodes.map((t) => t.id),
-            },
-          },
-        },
-      });
-
-      return [myTeams.nodes, projects.nodes];
+      return myTeams.nodes;
     }
 
-    const projectsPromise = fetchOwnProjectsAndTeams();
+    const teamsPromise = fetchTeams();
 
     if (!title) {
       const newTitle = await enquirer.prompt<{ title: string }>({
@@ -217,7 +206,12 @@ const create = command({
       title = newTitle.title;
     }
 
-    const [myTeams, projects] = await projectsPromise;
+    if (title.length === 0) {
+      console.error(chalk.red("Title is required!"));
+      process.exit(-1);
+    }
+
+    const myTeams = await teamsPromise;
 
     let defaultTeam = myTeams[0];
 
@@ -230,7 +224,6 @@ const create = command({
         };
       });
 
-      // TODO: Allow passing project from command line
       const newTeam = await enquirer.prompt<{ teamId: string }>({
         type: "autocomplete",
         name: "teamId",
@@ -241,7 +234,17 @@ const create = command({
       defaultTeam = myTeams.find((t) => t.id === newTeam.teamId) as Team;
     }
 
-    const projectChoices = projects.map((p: Project) => {
+    const projects = await client.projects({
+      filter: {
+        accessibleTeams: {
+          id: {
+            eq: defaultTeam.id,
+          },
+        },
+      },
+    });
+
+    const projectChoices = projects.nodes.map((p: Project) => {
       return {
         name: `${p.name}`,
         value: p.id,
@@ -256,7 +259,7 @@ const create = command({
       choices: projectChoices,
     });
 
-    const project = projects.find(
+    const project = projects.nodes.find(
       (p) => p.id === newProject.projectId,
     ) as Project;
 
