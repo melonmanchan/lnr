@@ -261,18 +261,28 @@ const create = command({
     ) as Project;
 
     if (!description) {
+      const hasEditorAvailable = !!config.editor;
+
+      const message = hasEditorAvailable
+        ? `Body: (e to launch ${config.editor}, enter to skip)`
+        : "Body: (enter to skip)";
+
       const makeDescription = await enquirer.prompt<{
-        makeDescription: string;
+        descriptionPrompt: string;
       }>({
         type: "input",
-        name: "makeDescription",
-        message: `Body: (e to launch ${config.editor}, enter to skip)`,
+        name: "descriptionPrompt",
+        message,
       });
 
-      if (makeDescription.makeDescription === "e") {
-        const editorDescription = openTextEditor(config.editor);
+      const { descriptionPrompt } = makeDescription;
+
+      if (descriptionPrompt === "e" && hasEditorAvailable) {
+        const editorDescription = openTextEditor(config.editor!);
 
         description = editorDescription;
+      } else {
+        description = descriptionPrompt;
       }
     }
 
