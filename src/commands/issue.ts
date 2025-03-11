@@ -9,7 +9,7 @@ import {
   optional,
 } from "cmd-ts";
 
-import chalk from "chalk";
+import chalk, { ChalkInstance } from "chalk";
 
 import enquirer from "enquirer";
 
@@ -34,6 +34,15 @@ const issueStates = [
 ];
 
 type IssueState = (typeof issueStates)[number];
+
+const stateColors: { [key: IssueState]: ChalkInstance } = {
+  canceled: chalk.red,
+  completed: chalk.green,
+  started: chalk.blue,
+  unstarted: chalk.yellow,
+  backlog: chalk.magenta,
+  triage: chalk.cyan,
+};
 
 const list = command({
   name: "list",
@@ -124,10 +133,13 @@ const list = command({
       issues.map(async (i) => {
         // TODO: Might wanna do custom graphql queries here to avoid the multifetch here
         const [assignee, state] = await Promise.all([i.assignee, i.state]);
+
+        const stateColorFn = stateColors[state?.type as IssueState] ?? chalk;
+
         return {
           ID: `[${i.identifier}]`,
           Title: truncate(i.title, 64),
-          Status: state?.name,
+          Status: stateColorFn(state?.name),
           Assignee: assignee?.displayName,
           _state: state?.type,
         };
