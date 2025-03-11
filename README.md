@@ -8,7 +8,7 @@ Linear CLI
 
 ```
 brew tap melonmanchan/lr
-brew install lr
+brew install melonmanchan/lr/lr
 ```
 
 ### Linux/Windows
