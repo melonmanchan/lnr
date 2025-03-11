@@ -20,8 +20,12 @@ export const ConfigSchemaV1 = z.object({
       return envEditor;
     }
 
+    if (!val) {
+      return null;
+    }
+
     return val;
-  }, z.string()),
+  }, z.string().nullable()),
 });
 
 let currentConfig: ConfigSchemaV1 | null = null;
@@ -59,7 +63,7 @@ export async function getConfig(): Promise<ConfigSchemaV1> {
   return currentConfig as ConfigSchemaV1;
 }
 
-export async function saveConfig(config: ConfigSchemaV1): Promise<void> {
+export async function saveConfig(config: ConfigSchemaV1): Promise<string> {
   try {
     const configPath = getConfigPath();
 
@@ -68,6 +72,8 @@ export async function saveConfig(config: ConfigSchemaV1): Promise<void> {
     const fileData = JSON.stringify(config, null, 2);
 
     await fs.writeFile(configPath, fileData, "utf-8");
+
+    return configPath;
   } catch (error) {
     throw error;
   }

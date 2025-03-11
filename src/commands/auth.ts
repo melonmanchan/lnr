@@ -4,6 +4,7 @@ import process from "node:process";
 import open from "open";
 import { ConfigSchemaV1, saveConfig } from "../config/config.ts";
 import { getLinearClient } from "../linear/client.ts";
+import chalk from "chalk";
 
 const AUTH_URL = "https://linear.app/settings/account/security";
 
@@ -12,33 +13,28 @@ const login = command({
   args: {},
 
   handler: async () => {
-    const resp = await enquirer.prompt<{ confirm: boolean }>({
+    const confirmResponse = await enquirer.prompt<{ confirm: boolean }>({
       type: "input",
       name: "confirm",
       message: "Press enter to open your browser and create a personal API key",
     });
 
-    if (resp.confirm) {
+    if (confirmResponse.confirm) {
       return;
     }
 
     await open(AUTH_URL);
 
-    const response = await enquirer.prompt<{ linearApiKey: string }>({
+    const apiKeyResponse = await enquirer.prompt<{ linearApiKey: string }>({
       type: "password",
       name: "linearApiKey",
       message: "Paste in your personal API key:",
     });
 
-    const { linearApiKey } = response;
-
-    const newConfig: ConfigSchemaV1 = {
-      version: 1,
-      linearApiKey,
-      editor: "$EDITOR",
-    };
+    const { linearApiKey } = apiKeyResponse;
 
     const testClient = getLinearClient(linearApiKey);
+
     try {
       await testClient.viewer;
     } catch {
@@ -49,9 +45,23 @@ const login = command({
       process.exit(-1);
     }
 
-    await saveConfig(newConfig);
+    const editorResponse = await enquirer.prompt<{ cliEditor: string }>({
+      type: "input",
+      name: "cliEditor",
+      initial: "$EDITOR",
+      message:
+        "Which editor would you like to use? (default: use shell env $EDITOR)",
+    });
 
-    console.log("Config saved succesfully");
+    const newConfig: ConfigSchemaV1 = {
+      version: 1,
+      linearApiKey,
+      editor: editorResponse.cliEditor,
+    };
+
+    const path = await saveConfig(newConfig);
+
+    console.log(`Config saved succesfully to ${chalk.bold(path)}`);
 
     process.exit(0);
   },
