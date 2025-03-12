@@ -9,6 +9,7 @@ import { printTable } from "../console/print.ts";
 
 const list = command({
   name: "list",
+  description: "List projects you are a member of",
   args: {},
 
   handler: async () => {
