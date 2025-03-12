@@ -1,8 +1,15 @@
 import Table from "cli-table3";
 
 export function printTable(values: any[]) {
-  // Filter out keys that begin with "_"
-  const keys = Object.keys(values[0]).filter((key) => !key.startsWith("_"));
+  if (!values || values.length === 0) {
+    return;
+  }
+
+  const keys = Object.keys(values[0])
+    .filter((key) => !key.startsWith("_"))
+    .filter((key) => {
+      return values.some((row) => row[key] !== null && row[key] !== undefined);
+    });
 
   const table = new Table({
     head: keys,
