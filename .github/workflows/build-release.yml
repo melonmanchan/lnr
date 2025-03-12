@@ -58,7 +58,7 @@ jobs:
       - name: Upload to GitHub Release
         run: |
           echo "Uploading artifacts to release: ${{ env.TAGTOUSE }}"
-          file="lrn-${{matrix.target}}"
+          file="lnr-${{matrix.target}}"
           zipfile="$file.zip"
           zip -r "$zipfile" "$file"
           echo "Uploading '$zipfile' to release tag '${{ env.TAGTOUSE }}' ..."
