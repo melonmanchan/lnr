@@ -35,10 +35,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 bin/
 
 # Build directories
-lr-linux-x64
-lr-linux-arm64
-lr-macos-x64
-lr-macos-arm64
-lr-windows-x64
+lnr-linux-x64
+lnr-linux-arm64
+lnr-macos-x64
+lnr-macos-arm64
+lnr-windows-x64
 
 ./*.zip
