@@ -2,6 +2,7 @@ import process from "node:process";
 import { run, subcommands } from "cmd-ts";
 import { issue } from "./commands/issue.ts";
 import { auth } from "./commands/auth.ts";
+import { project } from "./commands/project.ts";
 import chalk from "chalk";
 import { configExists } from "./config/config.ts";
 import packageJson from "../package.json" with { type: "json" };
@@ -22,7 +23,7 @@ const app = subcommands({
   version: packageJson.version,
   description: "A command-line interface for Linear",
   name: "lr",
-  cmds: { issue, auth },
+  cmds: { issue, auth, project },
 });
 
 run(app, ARGS);
