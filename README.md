@@ -1,4 +1,4 @@
-# lr
+# lnr
 
 Linear CLI
 
@@ -7,12 +7,12 @@ Linear CLI
 ### OSX
 
 ```
-brew tap melonmanchan/lr
-brew install melonmanchan/lr/lr
+brew tap melonmanchan/lnr
+brew install melonmanchan/lnr/lnr
 ```
 
 ### Linux/Windows
 
 Please see the `releases` tab in github and download the binaries there
 
-https://github.com/melonmanchan/lr/releases
+https://github.com/melonmanchan/lnr/releases

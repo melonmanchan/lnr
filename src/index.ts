@@ -15,14 +15,14 @@ const fullCommand = ARGS.join(" ");
 
 if (!hasConfig && fullCommand !== "auth login") {
   console.log("No configuration found");
-  console.log(`Please run ${chalk.bold("lr auth login")} to authenticate!`);
+  console.log(`Please run ${chalk.bold("lnr auth login")} to authenticate!`);
   process.exit(1);
 }
 
 const app = subcommands({
   version: packageJson.version,
   description: "A command-line interface for Linear",
-  name: "lr",
+  name: "lnr",
   cmds: { issue, auth, project },
 });
 

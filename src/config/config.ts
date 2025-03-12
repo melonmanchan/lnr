@@ -3,7 +3,7 @@ import process from "node:process";
 import * as z from "zod";
 import path from "node:path";
 
-const CONFIG_PATH = "~/.config/lr/config.json";
+const CONFIG_PATH = "~/.config/lnr/config.json";
 
 function getConfigPath() {
   return CONFIG_PATH.replace("~", process.env.HOME || "");
