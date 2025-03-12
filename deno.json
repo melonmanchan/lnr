@@ -1,10 +1,10 @@
 {
   "tasks": {
-    "compile:linux-x64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target x86_64-unknown-linux-gnu -o lrn-linux-x64/lnr src/index.ts",
-    "compile:linux-arm64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target aarch64-unknown-linux-gnu -o lrn-linux-arm64/lnr src/index.ts",
-    "compile:macos-x64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target x86_64-apple-darwin -o lrn-macos-x64/lnr src/index.ts",
-    "compile:macos-arm64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target aarch64-apple-darwin -o lrn-macos-arm64/lnr src/index.ts",
-    "compile:windows-x64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target x86_64-pc-windows-msvc -o lrn-windows-x64/lnr.exe src/index.ts",
+    "compile:linux-x64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target x86_64-unknown-linux-gnu -o lnr-linux-x64/lnr src/index.ts",
+    "compile:linux-arm64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target aarch64-unknown-linux-gnu -o lnr-linux-arm64/lnr src/index.ts",
+    "compile:macos-x64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target x86_64-apple-darwin -o lnr-macos-x64/lnr src/index.ts",
+    "compile:macos-arm64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target aarch64-apple-darwin -o lnr-macos-arm64/lnr src/index.ts",
+    "compile:windows-x64": "deno compile --allow-env --allow-net --allow-write --allow-read --allow-run --target x86_64-pc-windows-msvc -o lnr-windows-x64/lnr.exe src/index.ts",
 
     "start": "deno run --allow-env --allow-net --allow-write --allow-read --allow-run src/index.ts",
     "check": "deno check src/**/*.ts"
