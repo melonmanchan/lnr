@@ -42,6 +42,10 @@ const list = command({
       }),
     );
 
+    const message = `Projects you are a member of\n`;
+
+    console.log(message);
+
     printTable(formattedProjects);
 
     process.exit(0);
