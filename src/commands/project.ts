@@ -4,7 +4,6 @@ import { getConfig } from "../config/config.ts";
 import { getLinearClient } from "../linear/client.ts";
 import { paginatedLinearRequest } from "../linear/paginatedLinearRequest.ts";
 import type { ProjectsQueryVariables } from "@linear/sdk/dist/_generated_documents.d.ts";
-import toRelative from "../date/toRelative.ts";
 import { printTable } from "../console/print.ts";
 
 const list = command({
@@ -38,7 +37,6 @@ const list = command({
           Name: p.name,
           Status: status?.name,
           Health: p.health,
-          "Target date": p.targetDate ? toRelative(p.targetDate) : undefined,
         };
       }),
     );
