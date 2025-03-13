@@ -9,6 +9,8 @@
     "npm:cli-table3@~0.6.5": "0.6.5",
     "npm:cmd-ts@0.13": "0.13.0",
     "npm:enquirer@^2.4.1": "2.4.1",
+    "npm:graphql-tag@^2.12.6": "2.12.6_graphql@15.10.1",
+    "npm:graphql@^16.10.0": "16.10.0",
     "npm:open@^10.1.0": "10.1.0",
     "npm:zod@^3.24.2": "3.24.2"
   },
@@ -30,14 +32,14 @@
     "@graphql-typed-document-node/core@3.2.0_graphql@15.10.1": {
       "integrity": "sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==",
       "dependencies": [
-        "graphql"
+        "graphql@15.10.1"
       ]
     },
     "@linear/sdk@38.0.0_graphql@15.10.1": {
       "integrity": "sha512-1Z1F/rGjQqXlvk9Y0optAw3mq0OAvY+R5ahPCE3zRnZmALRnQFsmlX7A/oVqIq2bAH/GHKDg447+3CyirqURrA==",
       "dependencies": [
         "@graphql-typed-document-node/core",
-        "graphql",
+        "graphql@15.10.1",
         "isomorphic-unfetch"
       ]
     },
@@ -132,8 +134,18 @@
         "strip-ansi"
       ]
     },
+    "graphql-tag@2.12.6_graphql@15.10.1": {
+      "integrity": "sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==",
+      "dependencies": [
+        "graphql@15.10.1",
+        "tslib"
+      ]
+    },
     "graphql@15.10.1": {
       "integrity": "sha512-BL/Xd/T9baO6NFzoMpiMD7YUZ62R6viR5tp/MULVEnbYJXZA//kRNW7J0j1w/wXArgL0sCxhDfK5dczSKn3+cg=="
+    },
+    "graphql@16.10.0": {
+      "integrity": "sha512-AjqGKbDGUFRKIRCP9tCKiIGHyriz2oHEbPIbEtcSLSs4YjReZOIPQQWek4+6hjw62H9QShXHyaGivGiYVLeYFQ=="
     },
     "has-flag@4.0.0": {
       "integrity": "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="
@@ -207,6 +219,9 @@
     "tr46@0.0.3": {
       "integrity": "sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw=="
     },
+    "tslib@2.8.1": {
+      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
+    },
     "undici-types@6.20.0": {
       "integrity": "sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg=="
     },
@@ -239,6 +254,8 @@
         "npm:cli-table3@~0.6.5",
         "npm:cmd-ts@0.13",
         "npm:enquirer@^2.4.1",
+        "npm:graphql-tag@^2.12.6",
+        "npm:graphql@^16.10.0",
         "npm:open@^10.1.0",
         "npm:zod@^3.24.2"
       ]
