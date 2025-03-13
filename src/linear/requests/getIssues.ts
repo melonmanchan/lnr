@@ -81,7 +81,7 @@ export async function getIssues(
 
   const assigneeFilter =
     assignee === "@me"
-      ? project
+      ? project || freeformSearch
         ? {}
         : { assignee: { isMe: { eq: true } } }
       : { assignee: { displayName: { containsIgnoreCase: assignee } } };
