@@ -99,9 +99,16 @@ const list = command({
       short: "p",
       description: "Project name",
     }),
+
+    query: option({
+      type: optional(string),
+      long: "query",
+      short: "q",
+      description: "Freeform text search",
+    }),
   },
 
-  handler: async ({ state, assignee, project, cycle }) => {
+  handler: async ({ state, assignee, project, cycle, query }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
@@ -119,10 +126,19 @@ const list = command({
 
     const cycleFilter = cycle ? getCycleFilter(cycle) : {};
 
+    const contentFilter = query
+      ? {
+          searchableContent: {
+            contains: query,
+          },
+        }
+      : {};
+
     const filter: IssuesQueryVariables["filter"] = {
       ...stateFilter,
       ...assigneeFilter,
       ...cycleFilter,
+      ...contentFilter,
 
       ...(project
         ? { project: { name: { containsIgnoreCase: project } } }
