@@ -7,8 +7,6 @@ import {
   option,
   string,
   optional,
-  boolean,
-  flag,
 } from "cmd-ts";
 
 import chalk, { ChalkInstance } from "chalk";
@@ -16,33 +14,15 @@ import chalk, { ChalkInstance } from "chalk";
 import enquirer from "enquirer";
 
 import { getLinearClient } from "../linear/client.ts";
-import { paginatedLinearRequest } from "../linear/paginatedLinearRequest.ts";
+import { getIssues } from "../linear/requests/getIssues.ts";
 
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
-import { Issue, Project, Team } from "@linear/sdk";
+import { Project, Team } from "@linear/sdk";
 import process from "node:process";
 import { getConfig } from "../config/config.ts";
-import type {
-  IssuesQueryVariables,
-  NullableCycleFilter,
-} from "@linear/sdk/dist/_generated_documents.d.ts";
-
-const issueStates = [
-  "canceled",
-  "completed",
-  "started",
-  "unstarted",
-  "backlog",
-  "triage",
-];
-
-type IssueState = (typeof issueStates)[number];
-
-const cycleStates = ["active", "previous", "next"];
-
-type CycleState = (typeof issueStates)[number];
+import { cycleStates, IssueState, issueStates } from "../types.ts";
 
 const stateColors: { [key: IssueState]: ChalkInstance } = {
   canceled: chalk.red,
@@ -51,20 +31,6 @@ const stateColors: { [key: IssueState]: ChalkInstance } = {
   unstarted: chalk.yellow,
   backlog: chalk.magenta,
   triage: chalk.cyan,
-};
-
-const getCycleFilter = (cycle: CycleState): { cycle: NullableCycleFilter } => {
-  switch (cycle) {
-    case "active":
-      return { cycle: { isActive: { eq: true } } };
-    case "previous":
-      return { cycle: { isNext: { eq: true } } };
-    case "next":
-      return { cycle: { isPrevious: { eq: true } } };
-
-    default:
-      return { cycle: {} };
-  }
 };
 
 const list = command({
@@ -112,60 +78,27 @@ const list = command({
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
-    const stateFilter =
-      state.length === 0
-        ? { state: { type: { nin: ["completed", "canceled"] } } }
-        : { state: { type: { in: state } } };
-
-    const assigneeFilter =
-      assignee === "@me"
-        ? project
-          ? {}
-          : { assignee: { isMe: { eq: true } } }
-        : { assignee: { displayName: { containsIgnoreCase: assignee } } };
-
-    const cycleFilter = cycle ? getCycleFilter(cycle) : {};
-
-    const contentFilter = query
-      ? {
-          searchableContent: {
-            contains: query,
-          },
-        }
-      : {};
-
-    const filter: IssuesQueryVariables["filter"] = {
-      ...stateFilter,
-      ...assigneeFilter,
-      ...cycleFilter,
-      ...contentFilter,
-
-      ...(project
-        ? { project: { name: { containsIgnoreCase: project } } }
-        : {}),
-    };
-
-    const issues = await paginatedLinearRequest<Issue, IssuesQueryVariables>(
-      (variables) => client.issues(variables),
-      { filter },
+    const issues = await getIssues(
+      client,
+      state,
+      assignee,
+      cycle,
+      project,
+      query,
     );
 
-    const mappedIssues = await Promise.all(
-      issues.map(async (i) => {
-        // TODO: Might wanna do custom graphql queries here to avoid the multifetch here
-        const [assignee, state] = await Promise.all([i.assignee, i.state]);
+    const mappedIssues = issues.map((i) => {
+      const stateColorFn = stateColors[i.state?.type as IssueState] ?? chalk;
 
-        const stateColorFn = stateColors[state?.type as IssueState] ?? chalk;
-
-        return {
-          ID: `[${i.identifier}]`,
-          Title: truncate(i.title, 64),
-          Status: stateColorFn(state?.name),
-          Assignee: assignee?.displayName,
-          _state: state?.type,
-        };
-      }),
-    );
+      return {
+        ID: `[${i.identifier}]`,
+        Title: truncate(i.title, 64),
+        Status: stateColorFn(i.state?.name),
+        Assignee: i.assignee?.displayName,
+        Creator: i.creator?.displayName,
+        _state: i.state?.type,
+      };
+    });
 
     if (!mappedIssues.length) {
       console.info("No issues found");

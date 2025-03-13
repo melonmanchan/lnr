@@ -13,13 +13,6 @@ export const Project = z.object({
 
 export type Project = z.infer<typeof Project>;
 
-const ProjectsResponse = z.object({
-  nodes: z.array(Project),
-  pageInfo: PageInfo,
-});
-
-type ProjectsResponse = z.infer<typeof ProjectsResponse>;
-
 const getProjectsQuery = `
   query getProjects($filter: ProjectFilter!, $after: String) {
     projects(first: 250, filter: $filter, after: $after) {
