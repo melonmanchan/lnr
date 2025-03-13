@@ -74,60 +74,32 @@ const list = command({
   handler: async ({ state, assignee, project }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
-    const me = await client.viewer;
 
     const stateFilter =
       state.length === 0
         ? { state: { type: { nin: ["completed", "canceled"] } } }
         : { state: { type: { in: state } } };
 
-    const issues: Issue[] = [];
+    const assigneeFilter =
+      assignee === "@me"
+        ? project
+          ? {}
+          : { assignee: { isMe: { eq: true } } }
+        : { assignee: { displayName: { containsIgnoreCase: assignee } } };
 
-    if (project) {
-      const projectSpecificIssues = await paginatedLinearRequest<
-        Issue,
-        IssuesQueryVariables
-      >((variables) => client.issues(variables), {
-        filter: {
-          ...stateFilter,
+    const filter: IssuesQueryVariables["filter"] = {
+      ...stateFilter,
+      ...assigneeFilter,
 
-          assignee:
-            assignee !== "@me"
-              ? {
-                  displayName: {
-                    containsIgnoreCase: assignee,
-                  },
-                }
-              : undefined,
+      ...(project
+        ? { project: { name: { containsIgnoreCase: project } } }
+        : {}),
+    };
 
-          project: {
-            name: {
-              containsIgnoreCase: project,
-            },
-          },
-        },
-      });
-
-      issues.push(...projectSpecificIssues);
-    } else {
-      const globalIssues =
-        assignee === "@me"
-          ? await me.assignedIssues({ filter: { ...stateFilter } })
-          : await client.issues({
-              filter: {
-                ...stateFilter,
-                ...{
-                  assignee: {
-                    displayName: {
-                      containsIgnoreCase: assignee,
-                    },
-                  },
-                },
-              },
-            });
-
-      issues.push(...globalIssues.nodes);
-    }
+    const issues = await paginatedLinearRequest<Issue, IssuesQueryVariables>(
+      (variables) => client.issues(variables),
+      { filter },
+    );
 
     const mappedIssues = await Promise.all(
       issues.map(async (i) => {
