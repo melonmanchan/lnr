@@ -7,6 +7,8 @@ import {
   option,
   string,
   optional,
+  boolean,
+  flag,
 } from "cmd-ts";
 
 import chalk, { ChalkInstance } from "chalk";
@@ -55,6 +57,14 @@ const list = command({
         "Filter by issue state (completed, canceled, backlog, triage, unstarted, started). Default is everything except completed or cancelled",
     }),
 
+    activeCycle: flag({
+      type: boolean,
+      long: "active-cycle",
+      short: "ac",
+      defaultValue: () => false,
+      description: "Display only issues in the current active cycle",
+    }),
+
     assignee: option({
       type: string,
       long: "assignee",
@@ -71,7 +81,7 @@ const list = command({
     }),
   },
 
-  handler: async ({ state, assignee, project }) => {
+  handler: async ({ state, assignee, project, activeCycle }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
@@ -87,9 +97,14 @@ const list = command({
           : { assignee: { isMe: { eq: true } } }
         : { assignee: { displayName: { containsIgnoreCase: assignee } } };
 
+    const cycleFilter = activeCycle
+      ? { cycle: { isActive: { eq: true } } }
+      : {};
+
     const filter: IssuesQueryVariables["filter"] = {
       ...stateFilter,
       ...assigneeFilter,
+      ...cycleFilter,
 
       ...(project
         ? { project: { name: { containsIgnoreCase: project } } }
