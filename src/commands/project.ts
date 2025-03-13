@@ -1,4 +1,4 @@
-import { command, subcommands } from "cmd-ts";
+import { boolean, command, flag, subcommands } from "cmd-ts";
 import process from "node:process";
 import { getConfig } from "../config/config.ts";
 import { getLinearClient } from "../linear/client.ts";
@@ -9,19 +9,30 @@ import { printTable } from "../console/print.ts";
 const list = command({
   name: "list",
   description: "List projects you are a member of",
-  args: {},
+  args: {
+    all: flag({
+      type: boolean,
+      long: "all",
+      short: "a",
+      description: "List all projects?",
+    }),
+  },
 
-  handler: async () => {
+  handler: async ({ all }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
+    const membersFilter = all
+      ? {}
+      : {
+          members: {
+            isMe: { eq: true },
+          },
+        };
+
     const query: ProjectsQueryVariables = {
       filter: {
-        members: {
-          isMe: {
-            eq: true,
-          },
-        },
+        ...membersFilter,
       },
     };
 
