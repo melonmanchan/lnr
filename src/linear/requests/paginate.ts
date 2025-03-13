@@ -1,10 +1,10 @@
 import { LinearGraphQLClient } from "@linear/sdk";
 
-import { PageInfo } from "./utils.ts";
+import { PageInfo } from "./pageInfo.ts";
 
 export async function paginate<T, V>(
   client: LinearGraphQLClient,
-  query: any,
+  query: string,
   variables: V,
   extractPage: (response: any) => {
     nodes: T[];

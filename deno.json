@@ -11,5 +11,9 @@
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1"
+  },
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   }
 }

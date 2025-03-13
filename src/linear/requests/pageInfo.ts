@@ -1,5 +1,5 @@
 import * as z from "zod";
-import gql from "graphql-tag";
+// import gql from "graphql-tag";
 
 export const PageInfo = z.object({
   startCursor: z.string(),
@@ -10,11 +10,11 @@ export const PageInfo = z.object({
 
 export type PageInfo = z.infer<typeof PageInfo>;
 
-export const pageInfoFragment = gql(`
+export const pageInfoFragment = `
   fragment PageInfoFragment on PageInfo {
     startCursor
     endCursor
     hasNextPage
     hasPreviousPage
   }
-`);
+`;

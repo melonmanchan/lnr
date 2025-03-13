@@ -1,11 +1,10 @@
 import * as z from "zod";
-import gql from "graphql-tag";
 import { LinearClient } from "@linear/sdk";
 import { ProjectFilter } from "@linear/sdk/dist/_generated_documents.d.ts";
 
 import { paginate } from "./paginate.ts";
 
-import { pageInfoFragment, PageInfo } from "./utils.ts";
+import { pageInfoFragment, PageInfo } from "./pageInfo.ts";
 
 export const Project = z.object({
   name: z.string(),
@@ -21,7 +20,7 @@ const ProjectsResponse = z.object({
 
 type ProjectsResponse = z.infer<typeof ProjectsResponse>;
 
-const getProjectsQuery = gql`
+const getProjectsQuery = `
   query getProjects($filter: ProjectFilter!, $after: String) {
     projects(first: 250, filter: $filter, after: $after) {
       nodes {
@@ -58,7 +57,7 @@ export async function getProjects(
     ...membersFilter,
   };
 
-  const resp = await paginate<ProjectsResponse, { filter: ProjectFilter }>(
+  const resp = await paginate<Project, { filter: ProjectFilter }>(
     client,
     getProjectsQuery,
     { filter: query },
