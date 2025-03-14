@@ -3,8 +3,6 @@ import process from "node:process";
 import { getConfig } from "../config/config.ts";
 import { getLinearClient } from "../linear/client.ts";
 import { getProjects } from "../linear/requests/getProjects.ts";
-import { paginatedLinearRequest } from "../linear/paginatedLinearRequest.ts";
-import type { ProjectsQueryVariables } from "@linear/sdk/dist/_generated_documents.d.ts";
 import { printTable } from "../console/print.ts";
 
 const list = command({
