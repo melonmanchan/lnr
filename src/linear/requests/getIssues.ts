@@ -3,6 +3,7 @@ import { LinearClient } from "@linear/sdk";
 import { paginate } from "./paginate.ts";
 import { pageInfoFragment } from "./pageInfo.ts";
 import {
+  IdComparator,
   IssueFilter,
   NullableCycleFilter,
 } from "@linear/sdk/dist/_generated_documents.d.ts";
@@ -68,20 +69,27 @@ const getCycleFilter = (cycle: CycleState): { cycle: NullableCycleFilter } => {
 
 export async function getIssues(
   { client }: LinearClient,
-  issueStates: IssueState[],
-  assignee: string,
-  cycle: CycleState | undefined,
-  project: string | undefined,
-  freeformSearch: string | undefined,
+
+  searchParams: {
+    issueStates: IssueState[];
+    assignee?: string;
+    cycle?: CycleState;
+    project?: string;
+    freeformSearch?: string;
+  },
 ): Promise<LnrIssue[]> {
+  const { issueStates, assignee, cycle, project, freeformSearch } =
+    searchParams;
+
   const stateFilter =
     issueStates.length === 0
       ? { state: { type: { nin: ["completed", "canceled"] } } }
       : { state: { type: { in: issueStates } } };
 
+  // TODO: This is really messy
   const assigneeFilter =
     assignee === "@me"
-      ? project || freeformSearch
+      ? project || freeformSearch || assignee === undefined
         ? {}
         : { assignee: { isMe: { eq: true } } }
       : { assignee: { displayName: { containsIgnoreCase: assignee } } };

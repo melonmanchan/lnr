@@ -7,11 +7,14 @@ import {
   option,
   string,
   optional,
+  positional,
+  flag,
+  boolean,
 } from "cmd-ts";
 
 import chalk, { ChalkInstance } from "chalk";
-
 import enquirer from "enquirer";
+import open from "open";
 
 import { getLinearClient } from "../linear/client.ts";
 import { getIssues } from "../linear/requests/getIssues.ts";
@@ -80,11 +83,14 @@ const list = command({
 
     const issues = await getIssues(
       client,
-      status,
-      assignee,
-      cycle,
-      project,
-      query,
+
+      {
+        issueStates: status,
+        assignee,
+        cycle,
+        project,
+        freeformSearch: query,
+      },
     );
 
     const mappedIssues = issues.map((i) => {
@@ -297,9 +303,50 @@ const create = command({
     process.exit(0);
   },
 });
+const view = command({
+  name: "view",
+  description: "View an invidivual issue",
+  args: {
+    issue: positional({
+      type: string,
+      displayName: "issueIdentifier",
+      description: "Issue identifire",
+    }),
+    web: flag({
+      type: boolean,
+      long: "web",
+      short: "w",
+      description: "View project in web/native app",
+    }),
+  },
+
+  handler: async ({ issue, web }) => {
+    const config = await getConfig();
+    const client = getLinearClient(config.linearApiKey);
+    const me = await client.viewer;
+
+    const [org, apiIssue] = await Promise.all([
+      me.organization,
+      client.issue(issue).catch(() => null),
+    ]);
+
+    if (!apiIssue) {
+      console.warn("Issue not found!");
+      process.exit(1);
+    }
+
+    const url = `https://linear.app/${org.urlKey}/issue/${apiIssue.identifier}`;
+
+    console.log(`Opening issue ${url}...`);
+
+    open(url);
+
+    process.exit(0);
+  },
+});
 
 export const issue = subcommands({
   name: "issue",
   description: "Invidividal issue management",
-  cmds: { list, create },
+  cmds: { list, create, view },
 });
