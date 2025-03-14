@@ -70,9 +70,9 @@ export async function getIssues(
   { client }: LinearClient,
   issueStates: IssueState[],
   assignee: string,
-  cycle?: CycleState,
-  project?: string,
-  freeformSearch?: string,
+  cycle: CycleState | undefined,
+  project: string | undefined,
+  freeformSearch: string | undefined,
 ): Promise<LnrIssue[]> {
   const stateFilter =
     issueStates.length === 0

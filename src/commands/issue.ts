@@ -36,12 +36,12 @@ const stateColors: { [key: IssueState]: ChalkInstance } = {
 const list = command({
   name: "list",
   args: {
-    state: multioption({
+    status: multioption({
       type: array(oneOf<IssueState>(issueStates)),
-      long: "state",
+      long: "status",
       short: "s",
       description:
-        "Filter by issue state (completed, canceled, backlog, triage, unstarted, started). Default is everything except completed or cancelled",
+        "Filter by issue status (completed, canceled, backlog, triage, unstarted, started). Default is everything except completed or cancelled",
     }),
 
     cycle: option({
@@ -74,13 +74,13 @@ const list = command({
     }),
   },
 
-  handler: async ({ state, assignee, project, cycle, query }) => {
+  handler: async ({ status, assignee, project, cycle, query }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
     const issues = await getIssues(
       client,
-      state,
+      status,
       assignee,
       cycle,
       project,

@@ -4,20 +4,22 @@ import { ProjectFilter } from "@linear/sdk/dist/_generated_documents.d.ts";
 
 import { paginate } from "./paginate.ts";
 
-import { pageInfoFragment, PageInfo } from "./pageInfo.ts";
+import { pageInfoFragment } from "./pageInfo.ts";
 
-export const Project = z.object({
+export const LnrProject = z.object({
   name: z.string(),
+  slugId: z.string(),
   status: z.object({ name: z.string() }),
 });
 
-export type Project = z.infer<typeof Project>;
+export type LnrProject = z.infer<typeof LnrProject>;
 
 const getProjectsQuery = `
   query getProjects($filter: ProjectFilter!, $after: String) {
     projects(first: 250, filter: $filter, after: $after) {
       nodes {
         name
+        slugId
         status {
           name
         }
@@ -37,7 +39,8 @@ const extractProjectsPage = (response: any) => response.projects;
 export async function getProjects(
   { client }: LinearClient,
   ownProjectsOnly: boolean,
-): Promise<Project[]> {
+  name?: string,
+): Promise<LnrProject[]> {
   const membersFilter = ownProjectsOnly
     ? {}
     : {
@@ -46,16 +49,25 @@ export async function getProjects(
         },
       };
 
+  const nameFilter = name
+    ? {
+        name: {
+          containsIgnoreCase: name,
+        },
+      }
+    : {};
+
   const query: ProjectFilter = {
     ...membersFilter,
+    ...nameFilter,
   };
 
-  const resp = await paginate<Project, { filter: ProjectFilter }>(
+  const resp = await paginate<LnrProject, { filter: ProjectFilter }>(
     client,
     getProjectsQuery,
     { filter: query },
     extractProjectsPage,
   );
 
-  return z.array(Project).parse(resp);
+  return z.array(LnrProject).parse(resp);
 }
