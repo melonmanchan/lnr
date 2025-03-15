@@ -386,6 +386,10 @@ const edit = command({
     }),
   },
 
+  // TODO: Refactor this to use custom graphql queries instead of the linear API
+  // Could fetch the issue and assigned team in one go and then fetch the relevant workflow states
+  // down from 3 network requests to 2!
+  // But also would need to handle the mutation ourselves...
   handler: async ({ issue, title, description, assignee, status }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
@@ -458,7 +462,7 @@ const edit = command({
       );
 
       if (filterByStatus.length === 0) {
-        console.warn(`Could not find state for status ${status}`);
+        console.warn(`Could not find state for status ${status} in team`);
         process.exit(1);
       }
 
@@ -491,6 +495,8 @@ const edit = command({
     await apiIssue.update(updateData);
 
     console.log(`Issue ${chalk.bold(apiIssue.identifier)} updated`);
+
+    console.log(apiIssue.url);
 
     process.exit(0);
   },
