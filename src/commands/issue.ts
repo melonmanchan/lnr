@@ -22,10 +22,11 @@ import { getIssues } from "../linear/requests/getIssues.ts";
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
-import { Project, Team } from "@linear/sdk";
+import { Project, Team, User } from "@linear/sdk";
 import process from "node:process";
 import { getConfig } from "../config/config.ts";
 import { cycleStates, IssueState, issueStates } from "../types.ts";
+import { IssueUpdateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
 
 const stateColors: { [key: IssueState]: ChalkInstance } = {
   canceled: chalk.red,
@@ -303,6 +304,7 @@ const create = command({
     process.exit(0);
   },
 });
+
 const view = command({
   name: "view",
   description: "View an invidivual issue",
@@ -345,8 +347,108 @@ const view = command({
   },
 });
 
+const edit = command({
+  name: "edit",
+  description: "Edit an invidivual issue",
+  args: {
+    issue: positional({
+      type: string,
+      displayName: "issueIdentifier",
+      description: "Issue identifire",
+    }),
+
+    title: option({
+      type: optional(string),
+      long: "title",
+      short: "t",
+      description: "Title",
+    }),
+
+    description: option({
+      type: optional(string),
+      long: "description",
+      short: "d",
+      description: "Description",
+    }),
+
+    assignee: option({
+      type: optional(string),
+      long: "assignee",
+      short: "a",
+      description: "assignee",
+    }),
+  },
+
+  handler: async ({ issue, title, description, assignee }) => {
+    const config = await getConfig();
+    const client = getLinearClient(config.linearApiKey);
+    const apiIssue = await client.issue(issue);
+
+    if (!apiIssue) {
+      console.warn("Issue not found!");
+      process.exit(1);
+    }
+
+    const updateData: IssueUpdateInput = {};
+
+    if (title) {
+      updateData.title = title;
+    }
+
+    if (description) {
+      updateData.description = description;
+    }
+
+    if (assignee) {
+      const assignees = await client.users({
+        filter: {
+          displayName: {
+            containsIgnoreCase: assignee,
+          },
+        },
+      });
+
+      if (assignees.nodes.length === 0) {
+        console.warn('No assignees found for "${assignee}"');
+        process.exit(1);
+      }
+
+      if (assignees.nodes.length > 1) {
+        const assigneeChoices = assignees.nodes.map((p: User) => {
+          return {
+            name: `${p.name}`,
+            value: p.id,
+          };
+        });
+
+        const newAssignee = await enquirer.prompt<{ assigneeId: string }>({
+          type: "autocomplete",
+          name: "assigneeId",
+          message: "Select assignee",
+          choices: assigneeChoices,
+        });
+
+        updateData.assigneeId = newAssignee.assigneeId;
+      } else {
+        updateData.assigneeId = assignees.nodes[0].id;
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      console.warn("Nothing to update");
+      process.exit(1);
+    }
+
+    await apiIssue.update(updateData);
+
+    console.log("Issue edited succesfully");
+
+    process.exit(0);
+  },
+});
+
 export const issue = subcommands({
   name: "issue",
   description: "Invidividal issue management",
-  cmds: { list, create, view },
+  cmds: { list, create, view, edit },
 });
