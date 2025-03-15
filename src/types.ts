@@ -1,4 +1,4 @@
-export const issueStates = [
+export const issueStatuses = [
   "canceled",
   "completed",
   "started",
@@ -7,8 +7,8 @@ export const issueStates = [
   "triage",
 ];
 
-export type IssueState = (typeof issueStates)[number];
+export type IssueStatus = (typeof issueStatuses)[number];
 
 export const cycleStates = ["active", "previous", "next"];
 
-export type CycleState = (typeof issueStates)[number];
+export type CycleState = (typeof issueStatuses)[number];

@@ -22,13 +22,13 @@ import { getIssues } from "../linear/requests/getIssues.ts";
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
-import { Project, Team, User } from "@linear/sdk";
+import { Project, Team, User, WorkflowState } from "@linear/sdk";
 import process from "node:process";
 import { getConfig } from "../config/config.ts";
-import { cycleStates, IssueState, issueStates } from "../types.ts";
+import { cycleStates, IssueStatus, issueStatuses } from "../types.ts";
 import { IssueUpdateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
 
-const stateColors: { [key: IssueState]: ChalkInstance } = {
+const statusColors: { [key: IssueStatus]: ChalkInstance } = {
   canceled: chalk.red,
   completed: chalk.green,
   started: chalk.blue,
@@ -41,7 +41,7 @@ const list = command({
   name: "list",
   args: {
     status: multioption({
-      type: array(oneOf<IssueState>(issueStates)),
+      type: array(oneOf<IssueStatus>(issueStatuses)),
       long: "status",
       short: "s",
       description:
@@ -49,7 +49,7 @@ const list = command({
     }),
 
     cycle: option({
-      type: optional(oneOf<IssueState>(cycleStates)),
+      type: optional(oneOf<IssueStatus>(cycleStates)),
       long: "cycle",
       short: "c",
       description: "Cycle filters (current, previous, next)",
@@ -95,7 +95,7 @@ const list = command({
     );
 
     const mappedIssues = issues.map((i) => {
-      const stateColorFn = stateColors[i.state?.type as IssueState] ?? chalk;
+      const stateColorFn = statusColors[i.state?.type as IssueStatus] ?? chalk;
 
       return {
         ID: `[${i.identifier}]`,
@@ -113,8 +113,8 @@ const list = command({
     }
 
     const sortedIssues = mappedIssues.sort((a, b) => {
-      const aStatus = issueStates.indexOf(a._state!) ?? 0;
-      const bStatus = issueStates.indexOf(b._state!) ?? 0;
+      const aStatus = issueStatuses.indexOf(a._state!) ?? 0;
+      const bStatus = issueStatuses.indexOf(b._state!) ?? 0;
       return aStatus - bStatus;
     });
 
@@ -353,8 +353,7 @@ const edit = command({
   args: {
     issue: positional({
       type: string,
-      displayName: "issueIdentifier",
-      description: "Issue identifire",
+      description: "Issue identifier",
     }),
 
     title: option({
@@ -375,11 +374,19 @@ const edit = command({
       type: optional(string),
       long: "assignee",
       short: "a",
-      description: "assignee",
+      description: "Assignee",
+    }),
+
+    status: option({
+      type: oneOf<IssueStatus>(issueStatuses),
+      long: "status",
+      short: "s",
+      description:
+        "New issue status (completed, canceled, backlog, triage, unstarted, started)",
     }),
   },
 
-  handler: async ({ issue, title, description, assignee }) => {
+  handler: async ({ issue, title, description, assignee, status }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
     const apiIssue = await client.issue(issue);
@@ -434,6 +441,48 @@ const edit = command({
       }
     }
 
+    if (status) {
+      const team = await apiIssue.team;
+
+      if (!team) {
+        console.warn("Could not find team for issue");
+        process.exit(1);
+      }
+
+      const states = await team.states();
+
+      const { nodes } = states;
+
+      const filterByStatus = nodes.filter(
+        (s: WorkflowState) => s.type === status,
+      );
+
+      if (filterByStatus.length === 0) {
+        console.warn(`Could not find state for status ${status}`);
+        process.exit(1);
+      }
+
+      if (filterByStatus.length > 1) {
+        const statusChoices = filterByStatus.map((p: WorkflowState) => {
+          return {
+            name: `${p.name}`,
+            value: p.id,
+          };
+        });
+
+        const newStatus = await enquirer.prompt<{ statusId: string }>({
+          type: "autocomplete",
+          name: "statusId",
+          message: "Narrow down status",
+          choices: statusChoices,
+        });
+
+        updateData.stateId = newStatus.statusId;
+      } else {
+        updateData.stateId = filterByStatus[0].id;
+      }
+    }
+
     if (Object.keys(updateData).length === 0) {
       console.warn("Nothing to update");
       process.exit(1);
@@ -441,7 +490,7 @@ const edit = command({
 
     await apiIssue.update(updateData);
 
-    console.log("Issue edited succesfully");
+    console.log(`Issue ${chalk.bold(apiIssue.identifier)} updated`);
 
     process.exit(0);
   },
