@@ -202,7 +202,11 @@ const create = command({
       defaultTeam = myTeams.find((t) => t.id === newTeam.teamId) as Team;
     }
 
-    const projects = await getProjects(client, false, project, defaultTeam.id);
+    const projects = await getProjects(client, {
+      ownProjectsOnly: false,
+      name: project,
+      accessibleByTeamId: defaultTeam.id,
+    });
 
     const projectChoices = projects.map((p: LnrProject) => {
       return {

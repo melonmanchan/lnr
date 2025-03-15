@@ -10,6 +10,7 @@ export const LnrProject = z.object({
   id: z.string(),
   name: z.string(),
   slugId: z.string(),
+  url: z.string().optional(),
   status: z.object({ name: z.string() }),
 });
 
@@ -22,6 +23,7 @@ const getProjectsQuery = `
         id
         name
         slugId
+        url
         status {
           name
         }
@@ -40,10 +42,25 @@ const extractProjectsPage = (response: any) => response.projects;
 
 export async function getProjects(
   { client }: LinearClient,
-  ownProjectsOnly: boolean,
-  name?: string,
-  accessibleByTeamId?: string,
+
+  searchParams: {
+    ownProjectsOnly: boolean;
+    name?: string;
+    accessibleByTeamId?: string;
+    freeformSearch?: string;
+  },
 ): Promise<LnrProject[]> {
+  const { ownProjectsOnly, name, accessibleByTeamId, freeformSearch } =
+    searchParams;
+
+  const contentFilter = freeformSearch
+    ? {
+        searchableContent: {
+          contains: freeformSearch,
+        },
+      }
+    : {};
+
   const membersFilter = ownProjectsOnly
     ? {}
     : {
@@ -74,6 +91,7 @@ export async function getProjects(
     ...teamFilter,
     ...membersFilter,
     ...nameFilter,
+    ...contentFilter,
   };
 
   const resp = await paginate<LnrProject, { filter: ProjectFilter }>(

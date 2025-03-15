@@ -2,6 +2,8 @@ import {
   boolean,
   command,
   flag,
+  option,
+  optional,
   positional,
   string,
   subcommands,
@@ -23,22 +25,33 @@ const list = command({
       short: "a",
       description: "List all projects?",
     }),
+
+    query: option({
+      type: optional(string),
+      long: "query",
+      short: "q",
+      description: "Freeform text search",
+    }),
   },
 
-  handler: async ({ all }) => {
+  handler: async ({ all, query }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
-    const projects = await getProjects(client, !!all);
+    const projects = await getProjects(client, {
+      ownProjectsOnly: !!all,
+      freeformSearch: query,
+    });
 
     const formattedProjects = projects.map((p) => {
       return {
         Name: p.name,
         Status: p.status.name,
+        Url: p.url,
       };
     });
 
-    const message = `Projects you are a member of\n`;
+    const message = all ? "Projects\n" : "Projects you are a member of\n";
 
     console.log(message);
 
@@ -73,7 +86,10 @@ const view = command({
 
     const [org, projects] = await Promise.all([
       me.organization,
-      getProjects(client, false, project),
+      getProjects(client, {
+        ownProjectsOnly: false,
+        name: project,
+      }),
     ]);
 
     if (projects.length === 0) {
