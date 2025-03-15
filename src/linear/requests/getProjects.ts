@@ -7,6 +7,7 @@ import { paginate } from "./paginate.ts";
 import { pageInfoFragment } from "./pageInfo.ts";
 
 export const LnrProject = z.object({
+  id: z.string(),
   name: z.string(),
   slugId: z.string(),
   status: z.object({ name: z.string() }),
@@ -18,6 +19,7 @@ const getProjectsQuery = `
   query getProjects($filter: ProjectFilter!, $after: String) {
     projects(first: 250, filter: $filter, after: $after) {
       nodes {
+        id
         name
         slugId
         status {
@@ -40,6 +42,7 @@ export async function getProjects(
   { client }: LinearClient,
   ownProjectsOnly: boolean,
   name?: string,
+  accessibleByTeamId?: string,
 ): Promise<LnrProject[]> {
   const membersFilter = ownProjectsOnly
     ? {}
@@ -57,7 +60,18 @@ export async function getProjects(
       }
     : {};
 
+  const teamFilter = accessibleByTeamId
+    ? {
+        accessibleTeams: {
+          id: {
+            eq: accessibleByTeamId,
+          },
+        },
+      }
+    : {};
+
   const query: ProjectFilter = {
+    ...teamFilter,
     ...membersFilter,
     ...nameFilter,
   };

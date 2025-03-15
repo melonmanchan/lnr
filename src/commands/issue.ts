@@ -18,11 +18,12 @@ import open from "open";
 
 import { getLinearClient } from "../linear/client.ts";
 import { getIssues } from "../linear/requests/getIssues.ts";
+import { getProjects, LnrProject } from "../linear/requests/getProjects.ts";
 
 import { printTable } from "../console/print.ts";
 import truncate from "../utils/truncate.ts";
 import { openTextEditor } from "../console/editor.ts";
-import { Project, Team, User, WorkflowState } from "@linear/sdk";
+import { Team, User, WorkflowState } from "@linear/sdk";
 import process from "node:process";
 import { getConfig } from "../config/config.ts";
 import { cycleStates, IssueStatus, issueStatuses } from "../types.ts";
@@ -143,8 +144,15 @@ const create = command({
       short: "d",
       description: "Issue description",
     }),
+
+    project: option({
+      type: optional(string),
+      long: "project",
+      short: "p",
+      description: "Project name",
+    }),
   },
-  handler: async ({ title, description }) => {
+  handler: async ({ title, description, project }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
@@ -157,17 +165,17 @@ const create = command({
 
     const teamsPromise = fetchTeams();
 
-    if (!title) {
-      const newTitle = await enquirer.prompt<{ title: string }>({
-        type: "input",
-        name: "title",
-        message: "Issue title",
-      });
+    const newTitle = title
+      ? title
+      : (
+          await enquirer.prompt<{ title: string }>({
+            type: "input",
+            name: "title",
+            message: "Issue title",
+          })
+        ).title;
 
-      title = newTitle.title;
-    }
-
-    if (title.length === 0) {
+    if (newTitle.length === 0) {
       console.error(chalk.red("Title is required!"));
       process.exit(-1);
     }
@@ -176,7 +184,6 @@ const create = command({
 
     let defaultTeam = myTeams[0];
 
-    // TODO: Some default logic here?
     if (myTeams.length > 1) {
       const teamChoices = myTeams.map((t: Team) => {
         return {
@@ -195,34 +202,31 @@ const create = command({
       defaultTeam = myTeams.find((t) => t.id === newTeam.teamId) as Team;
     }
 
-    const projects = await client.projects({
-      filter: {
-        accessibleTeams: {
-          id: {
-            eq: defaultTeam.id,
-          },
-        },
-      },
-    });
+    const projects = await getProjects(client, false, project, defaultTeam.id);
 
-    const projectChoices = projects.nodes.map((p: Project) => {
+    const projectChoices = projects.map((p: LnrProject) => {
       return {
-        name: `${p.name}`,
+        name: p.name,
         value: p.id,
       };
     });
 
-    // TODO: Allow passing project from command line
-    const newProject = await enquirer.prompt<{ projectId: string }>({
-      type: "autocomplete",
-      name: "projectId",
-      message: "Select a project",
-      choices: projectChoices,
-    });
+    if (projectChoices.length === 0) {
+      console.log("No projects found matching filters");
+      process.exit(0);
+    }
 
-    const project = projects.nodes.find(
-      (p) => p.id === newProject.projectId,
-    ) as Project;
+    const projectId =
+      projectChoices.length === 1
+        ? projectChoices[0].value
+        : (
+            await enquirer.prompt<{ projectId: string }>({
+              type: "autocomplete",
+              name: "projectId",
+              message: "Select a project",
+              choices: projectChoices,
+            })
+          ).projectId;
 
     if (!description) {
       const hasEditorAvailable = !!config.editor;
@@ -250,38 +254,6 @@ const create = command({
       }
     }
 
-    // TODO
-    // const labelPrompt = new Enquirer<{ addLabel: boolean }>();
-    // const addLabel = (
-    //   await labelPrompt.prompt({
-    //     type: "confirm",
-    //     name: "addLabel",
-    //     message: "Add labels?",
-    //   })
-    // ).addLabel;
-
-    // const labelIds: string[] = [];
-
-    // if (addLabel) {
-    //   const teamLabels = await defaultTeam.labels();
-
-    //   const pickLabelsPrompt = new Enquirer<{ labelIds: string[] }>();
-
-    //   const newLabels = await pickLabelsPrompt.prompt({
-    //     type: "multiselect",
-    //     name: "labelIds",
-    //     message: "Select a label",
-    //     choices: teamLabels.nodes.map((l) => {
-    //       return {
-    //         name: l.name,
-    //         value: l.id,
-    //       };
-    //     }),
-    //   });
-
-    //   labelIds.push(...newLabels.labelIds);
-    // }
-
     const defaultTeamState = await defaultTeam.defaultIssueState;
 
     const response = await client.createIssue({
@@ -289,14 +261,16 @@ const create = command({
       teamId: defaultTeam.id,
       stateId: defaultTeamState?.id,
       description,
-      projectId: project?.id,
-      title,
+      projectId: projectId,
+      title: newTitle,
     });
 
     const newIssue = await response.issue;
 
+    const projectName = projects.find((p) => p.id === projectId)?.name;
+
     console.log(
-      `Created issue ${chalk.bold(newIssue?.identifier)} for project ${chalk.bold(project?.name)}`,
+      `Created issue ${chalk.bold(newIssue?.identifier)} for project ${chalk.bold(projectName)}`,
     );
 
     console.log(newIssue?.url);
@@ -312,13 +286,13 @@ const view = command({
     issue: positional({
       type: string,
       displayName: "issueIdentifier",
-      description: "Issue identifire",
+      description: "Issue identifier",
     }),
     web: flag({
       type: boolean,
       long: "web",
       short: "w",
-      description: "View project in web/native app",
+      description: "View issue in web/native app",
     }),
   },
 
@@ -349,7 +323,7 @@ const view = command({
 
 const edit = command({
   name: "edit",
-  description: "Edit an invidivual issue",
+  description: "Edit an individual issue",
   args: {
     issue: positional({
       type: string,
