@@ -3,11 +3,10 @@ import { LinearClient } from "@linear/sdk";
 import { paginate } from "./paginate.ts";
 import { pageInfoFragment } from "./pageInfo.ts";
 import {
-  IdComparator,
   IssueFilter,
   NullableCycleFilter,
 } from "@linear/sdk/dist/_generated_documents.d.ts";
-import { CycleState, IssueState } from "../../types.ts";
+import { CycleState, IssueStatus } from "../../types.ts";
 
 const getIssuesQuery = `query GetIssues($filter: IssueFilter!, $after: String) {
   issues(first: 250, filter: $filter, after: $after) {
@@ -71,7 +70,7 @@ export async function getIssues(
   { client }: LinearClient,
 
   searchParams: {
-    issueStates: IssueState[];
+    issueStates: IssueStatus[];
     assignee?: string;
     cycle?: CycleState;
     project?: string;
