@@ -26,7 +26,13 @@ import { openTextEditor } from "../console/editor.ts";
 import { Team, User, WorkflowState } from "@linear/sdk";
 import process from "node:process";
 import { getConfig } from "../config/config.ts";
-import { cycleStates, IssueStatus, issueStatuses } from "../types.ts";
+import {
+  cycleStates,
+  issuePriorities,
+  IssuePriority,
+  IssueStatus,
+  issueStatuses,
+} from "../types.ts";
 import { IssueUpdateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
 
 const statusColors: { [key: IssueStatus]: ChalkInstance } = {
@@ -356,11 +362,17 @@ const edit = command({
     }),
 
     status: option({
-      type: oneOf<IssueStatus>(issueStatuses),
+      type: optional(oneOf<IssueStatus>(issueStatuses)),
       long: "status",
       short: "s",
-      description:
-        "New issue status (completed, canceled, backlog, triage, unstarted, started)",
+      description: `Update status ${issueStatuses.join(", ")}`,
+    }),
+
+    priority: option({
+      type: optional(oneOf<IssuePriority>(issuePriorities)),
+      long: "priority",
+      short: "p",
+      description: `Update priority (${issuePriorities.join(", ")})`,
     }),
   },
 
@@ -368,7 +380,14 @@ const edit = command({
   // Could fetch the issue and assigned team in one go and then fetch the relevant workflow states
   // down from 3 network requests to 2!
   // But also would need to handle the mutation ourselves...
-  handler: async ({ issue, title, description, assignee, status }) => {
+  handler: async ({
+    issue,
+    title,
+    description,
+    assignee,
+    priority,
+    status,
+  }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
     const apiIssue = await client.issue(issue);
@@ -386,6 +405,9 @@ const edit = command({
 
     if (description) {
       updateData.description = description;
+    }
+    if (priority) {
+      updateData.priority = issuePriorities.indexOf(priority);
     }
 
     if (assignee) {
