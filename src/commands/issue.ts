@@ -18,6 +18,10 @@ import open from "open";
 
 import { getLinearClient } from "../linear/client.ts";
 import { getIssues } from "../linear/requests/getIssues.ts";
+import {
+  updateIssue,
+  UpdateIssueData,
+} from "../linear/requests/updateIssue.ts";
 import { getProjects, LnrProject } from "../linear/requests/getProjects.ts";
 
 import { printTable } from "../console/print.ts";
@@ -33,7 +37,6 @@ import {
   IssueStatus,
   issueStatuses,
 } from "../types.ts";
-import { IssueUpdateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
 
 const statusColors: { [key: IssueStatus]: ChalkInstance } = {
   canceled: chalk.red,
@@ -376,10 +379,6 @@ const edit = command({
     }),
   },
 
-  // TODO: Refactor this to use custom graphql queries instead of the linear API
-  // Could fetch the issue and assigned team in one go and then fetch the relevant workflow states
-  // down from 3 network requests to 2!
-  // But also would need to handle the mutation ourselves...
   handler: async ({
     issue,
     title,
@@ -390,14 +389,10 @@ const edit = command({
   }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
-    const apiIssue = await client.issue(issue);
 
-    if (!apiIssue) {
-      console.warn("Issue not found!");
-      process.exit(1);
-    }
-
-    const updateData: IssueUpdateInput = {};
+    const updateData: UpdateIssueData = {
+      id: issue,
+    };
 
     if (title) {
       updateData.title = title;
@@ -446,6 +441,7 @@ const edit = command({
     }
 
     if (status) {
+      const apiIssue = await client.issue(issue);
       const team = await apiIssue.team;
 
       if (!team) {
@@ -466,25 +462,26 @@ const edit = command({
         process.exit(1);
       }
 
-      if (filterByStatus.length > 1) {
-        const statusChoices = filterByStatus.map((p: WorkflowState) => {
-          return {
-            name: `${p.name}`,
-            value: p.id,
-          };
-        });
+      const statusChoices = filterByStatus.map((p: WorkflowState) => {
+        return {
+          name: `${p.name}`,
+          value: p.id,
+        };
+      });
 
-        const newStatus = await enquirer.prompt<{ statusId: string }>({
-          type: "autocomplete",
-          name: "statusId",
-          message: "Narrow down status",
-          choices: statusChoices,
-        });
+      const newStatusId =
+        filterByStatus.length == 1
+          ? filterByStatus[0].id
+          : (
+              await enquirer.prompt<{ statusId: string }>({
+                type: "autocomplete",
+                name: "statusId",
+                message: "Narrow down status",
+                choices: statusChoices,
+              })
+            ).statusId;
 
-        updateData.stateId = newStatus.statusId;
-      } else {
-        updateData.stateId = filterByStatus[0].id;
-      }
+      updateData.stateId = newStatusId;
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -492,10 +489,9 @@ const edit = command({
       process.exit(1);
     }
 
-    await apiIssue.update(updateData);
+    const apiIssue = await updateIssue(client, updateData);
 
     console.log(`Issue ${chalk.bold(apiIssue.identifier)} updated`);
-
     console.log(apiIssue.url);
 
     process.exit(0);
