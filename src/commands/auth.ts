@@ -1,10 +1,10 @@
-import enquirer from "enquirer";
-import { command, subcommands } from "cmd-ts";
 import process from "node:process";
-import open from "open";
-import { ConfigSchemaV1, saveConfig } from "../config/config.ts";
-import { getLinearClient } from "../linear/client.ts";
 import chalk from "chalk";
+import { command, subcommands } from "cmd-ts";
+import enquirer from "enquirer";
+import open from "open";
+import { type ConfigSchemaV1, saveConfig } from "../config/config.ts";
+import { getLinearClient } from "../linear/client.ts";
 
 const AUTH_URL = "https://linear.app/settings/account/security";
 

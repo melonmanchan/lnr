@@ -1,43 +1,46 @@
 import {
-  command,
-  oneOf,
-  multioption,
-  subcommands,
   array,
+  boolean,
+  command,
+  flag,
+  multioption,
+  oneOf,
   option,
-  string,
   optional,
   positional,
-  flag,
-  boolean,
+  string,
+  subcommands,
 } from "cmd-ts";
 
-import chalk, { ChalkInstance } from "chalk";
+import chalk, { type ChalkInstance } from "chalk";
 import enquirer from "enquirer";
 import open from "open";
 
 import { getLinearClient } from "../linear/client.ts";
 import { getIssues } from "../linear/requests/getIssues.ts";
 import {
-  updateIssue,
-  UpdateIssueData,
-} from "../linear/requests/updateIssue.ts";
-import { getProjects, LnrProject } from "../linear/requests/getProjects.ts";
-
-import { printTable } from "../console/print.ts";
-import truncate from "../utils/truncate.ts";
-import { openTextEditor } from "../console/editor.ts";
-import { Team, User, WorkflowState } from "@linear/sdk";
-import process from "node:process";
-import { getConfig } from "../config/config.ts";
+  type LnrProject,
+  getProjects,
+} from "../linear/requests/getProjects.ts";
 import {
+  type UpdateIssueData,
+  updateIssue,
+} from "../linear/requests/updateIssue.ts";
+
+import process from "node:process";
+import type { Team, User, WorkflowState } from "@linear/sdk";
+import type { IssueCreateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
+import { getConfig } from "../config/config.ts";
+import { openTextEditor } from "../console/editor.ts";
+import { printTable } from "../console/print.ts";
+import {
+  type IssuePriority,
+  type IssueStatus,
   cycleStates,
   issuePriorities,
-  IssuePriority,
-  IssueStatus,
   issueStatuses,
 } from "../types.ts";
-import { IssueCreateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
+import truncate from "../utils/truncate.ts";
 
 const statusColors: { [key: IssueStatus]: ChalkInstance } = {
   canceled: chalk.red,

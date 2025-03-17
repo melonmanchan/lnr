@@ -1,6 +1,6 @@
-import { LinearGraphQLClient } from "@linear/sdk";
+import type { LinearGraphQLClient } from "@linear/sdk";
 
-import { PageInfo } from "./pageInfo.ts";
+import type { PageInfo } from "./pageInfo.ts";
 
 export async function paginate<T, V>(
   client: LinearGraphQLClient,

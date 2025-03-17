@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 import process from "node:process";
 import * as z from "zod";
-import path from "node:path";
 
 const CONFIG_PATH = "~/.config/lnr/config.json";
 

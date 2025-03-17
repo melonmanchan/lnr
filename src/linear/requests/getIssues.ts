@@ -1,12 +1,12 @@
-import * as z from "zod";
-import { LinearClient } from "@linear/sdk";
-import { paginate } from "./paginate.ts";
-import { pageInfoFragment } from "./pageInfo.ts";
-import {
+import type { LinearClient } from "@linear/sdk";
+import type {
   IssueFilter,
   NullableCycleFilter,
 } from "@linear/sdk/dist/_generated_documents.d.ts";
-import { CycleState, IssueStatus } from "../../types.ts";
+import * as z from "zod";
+import type { CycleState, IssueStatus } from "../../types.ts";
+import { pageInfoFragment } from "./pageInfo.ts";
+import { paginate } from "./paginate.ts";
 
 const getIssuesQuery = `query GetIssues($filter: IssueFilter!, $after: String) {
   issues(first: 250, filter: $filter, after: $after) {

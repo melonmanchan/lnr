@@ -1,6 +1,6 @@
+import type { LinearClient } from "@linear/sdk";
+import type { ProjectFilter } from "@linear/sdk/dist/_generated_documents.d.ts";
 import * as z from "zod";
-import { LinearClient } from "@linear/sdk";
-import { ProjectFilter } from "@linear/sdk/dist/_generated_documents.d.ts";
 
 import { paginate } from "./paginate.ts";
 
