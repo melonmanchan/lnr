@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@linear/sdk": "^38.0.0",
-    "@types/node": "^22.13.10",
     "chalk": "^5.4.1",
     "cli-table3": "^0.6.5",
     "cmd-ts": "^0.13.0",
@@ -19,6 +18,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/node": "^22.13.10",
     "@biomejs/biome": "^1.9.4"
   }
 }
