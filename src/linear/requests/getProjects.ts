@@ -62,12 +62,12 @@ export async function getProjects(
     : {};
 
   const membersFilter = ownProjectsOnly
-    ? {}
-    : {
+    ? {
         members: {
           isMe: { eq: true },
         },
-      };
+      }
+    : {};
 
   const nameFilter = name
     ? {

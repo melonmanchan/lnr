@@ -39,7 +39,7 @@ const list = command({
     const client = getLinearClient(config.linearApiKey);
 
     const projects = await getProjects(client, {
-      ownProjectsOnly: !!all,
+      ownProjectsOnly: !all,
       freeformSearch: query,
     });
 
