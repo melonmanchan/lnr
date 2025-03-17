@@ -170,6 +170,12 @@ const create = command({
       description: "Project name",
     }),
 
+    priority: option({
+      type: optional(oneOf<IssuePriority>(issuePriorities)),
+      long: "priority",
+      description: `Issue priority (${issuePriorities.join(", ")})`,
+    }),
+
     label: option({
       type: optional(string),
       long: "label",
@@ -177,7 +183,7 @@ const create = command({
       description: "Label name",
     }),
   },
-  handler: async ({ title, description, project, label }) => {
+  handler: async ({ title, description, project, label, priority }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
@@ -329,6 +335,10 @@ const create = command({
             ).labelIds;
 
       createInput.labelIds = labelIds;
+    }
+
+    if (priority) {
+      createInput.priority = issuePriorities.indexOf(priority);
     }
 
     const response = await client.createIssue({
