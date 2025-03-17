@@ -1,5 +1,5 @@
+import type { LinearClient } from "@linear/sdk";
 import * as z from "zod";
-import { LinearClient } from "@linear/sdk";
 
 const updateIssueMutation = `
   mutation IssueUpdate($id: String!, $input: IssueUpdateInput!) {

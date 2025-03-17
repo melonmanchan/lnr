@@ -1,3 +1,4 @@
+import process from "node:process";
 import {
   boolean,
   command,
@@ -8,12 +9,11 @@ import {
   string,
   subcommands,
 } from "cmd-ts";
-import process from "node:process";
+import open from "open";
 import { getConfig } from "../config/config.ts";
+import { printTable } from "../console/print.ts";
 import { getLinearClient } from "../linear/client.ts";
 import { getProjects } from "../linear/requests/getProjects.ts";
-import { printTable } from "../console/print.ts";
-import open from "open";
 
 const list = command({
   name: "list",

@@ -17,5 +17,8 @@
     "graphql": "^16.10.0",
     "open": "^10.1.0",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4"
   }
 }

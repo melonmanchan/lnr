@@ -8,7 +8,7 @@ export default function toRelative(date: Date): string {
     86400 * 7,
     86400 * 30,
     86400 * 365,
-    Infinity,
+    Number.POSITIVE_INFINITY,
   ];
 
   const unitStrings = [

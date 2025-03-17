@@ -1,43 +1,46 @@
 import {
-  command,
-  oneOf,
-  multioption,
-  subcommands,
   array,
+  boolean,
+  command,
+  flag,
+  multioption,
+  oneOf,
   option,
-  string,
   optional,
   positional,
-  flag,
-  boolean,
+  string,
+  subcommands,
 } from "cmd-ts";
 
-import chalk, { ChalkInstance } from "chalk";
+import chalk, { type ChalkInstance } from "chalk";
 import enquirer from "enquirer";
 import open from "open";
 
 import { getLinearClient } from "../linear/client.ts";
 import { getIssues } from "../linear/requests/getIssues.ts";
 import {
-  updateIssue,
-  UpdateIssueData,
-} from "../linear/requests/updateIssue.ts";
-import { getProjects, LnrProject } from "../linear/requests/getProjects.ts";
-
-import { printTable } from "../console/print.ts";
-import truncate from "../utils/truncate.ts";
-import { openTextEditor } from "../console/editor.ts";
-import { Team, User, WorkflowState } from "@linear/sdk";
-import process from "node:process";
-import { getConfig } from "../config/config.ts";
+  type LnrProject,
+  getProjects,
+} from "../linear/requests/getProjects.ts";
 import {
+  type UpdateIssueData,
+  updateIssue,
+} from "../linear/requests/updateIssue.ts";
+
+import process from "node:process";
+import type { Team, User, WorkflowState } from "@linear/sdk";
+import type { IssueCreateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
+import { getConfig } from "../config/config.ts";
+import { openTextEditor } from "../console/editor.ts";
+import { printTable } from "../console/print.ts";
+import {
+  type IssuePriority,
+  type IssueStatus,
   cycleStates,
   issuePriorities,
-  IssuePriority,
-  IssueStatus,
   issueStatuses,
 } from "../types.ts";
-import { IssueCreateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
+import truncate from "../utils/truncate.ts";
 
 const statusColors: { [key: IssueStatus]: ChalkInstance } = {
   canceled: chalk.red,
@@ -132,8 +135,8 @@ const list = command({
     }
 
     const sortedIssues = mappedIssues.sort((a, b) => {
-      const aStatus = issueStatuses.indexOf(a._state!) ?? 0;
-      const bStatus = issueStatuses.indexOf(b._state!) ?? 0;
+      const aStatus = issueStatuses.indexOf(a._state) ?? 0;
+      const bStatus = issueStatuses.indexOf(b._state) ?? 0;
       return aStatus - bStatus;
     });
 
@@ -170,6 +173,12 @@ const create = command({
       description: "Project name",
     }),
 
+    priority: option({
+      type: optional(oneOf<IssuePriority>(issuePriorities)),
+      long: "priority",
+      description: `Issue priority (${issuePriorities.join(", ")})`,
+    }),
+
     label: option({
       type: optional(string),
       long: "label",
@@ -177,7 +186,7 @@ const create = command({
       description: "Label name",
     }),
   },
-  handler: async ({ title, description, project, label }) => {
+  handler: async ({ title, description, project, label, priority }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
@@ -274,8 +283,8 @@ const create = command({
 
       const { descriptionPrompt } = makeDescription;
 
-      if (descriptionPrompt === "e" && hasEditorAvailable) {
-        const editorDescription = openTextEditor(config.editor!);
+      if (descriptionPrompt === "e" && hasEditorAvailable && config.editor) {
+        const editorDescription = openTextEditor(config.editor);
 
         description = editorDescription;
       } else {
@@ -329,6 +338,10 @@ const create = command({
             ).labelIds;
 
       createInput.labelIds = labelIds;
+    }
+
+    if (priority) {
+      createInput.priority = issuePriorities.indexOf(priority);
     }
 
     const response = await client.createIssue({
@@ -528,7 +541,7 @@ const edit = command({
       });
 
       const newStatusId =
-        filterByStatus.length == 1
+        filterByStatus.length === 1
           ? filterByStatus[0].id
           : (
               await enquirer.prompt<{ statusId: string }>({
