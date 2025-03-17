@@ -37,6 +37,7 @@ import {
   IssueStatus,
   issueStatuses,
 } from "../types.ts";
+import { IssueCreateInput } from "@linear/sdk/dist/_generated_documents.d.ts";
 
 const statusColors: { [key: IssueStatus]: ChalkInstance } = {
   canceled: chalk.red,
@@ -168,8 +169,15 @@ const create = command({
       short: "p",
       description: "Project name",
     }),
+
+    label: option({
+      type: optional(string),
+      long: "label",
+      short: "l",
+      description: "Label name",
+    }),
   },
-  handler: async ({ title, description, project }) => {
+  handler: async ({ title, description, project, label }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
@@ -220,7 +228,7 @@ const create = command({
     }
 
     const projects = await getProjects(client, {
-      ownProjectsOnly: false,
+      ownProjectsOnly: !project,
       name: project,
       accessibleByTeamId: defaultTeam.id,
     });
@@ -277,13 +285,55 @@ const create = command({
 
     const defaultTeamState = await defaultTeam.defaultIssueState;
 
-    const response = await client.createIssue({
-      labelIds: [],
+    const createInput: IssueCreateInput = {
       teamId: defaultTeam.id,
       stateId: defaultTeamState?.id,
       description,
       projectId: projectId,
       title: newTitle,
+    };
+
+    if (label) {
+      const availableLabels = await defaultTeam.labels({
+        filter: {
+          name: {
+            containsIgnoreCase: label,
+          },
+        },
+      });
+
+      const noGroups = availableLabels.nodes.filter((l) => !l.isGroup);
+
+      if (!noGroups.length) {
+        console.log('No labels found for query "${label}"');
+        process.exit(1);
+      }
+
+      const formattedLabels = noGroups.map((l) => {
+        return {
+          name: l.name,
+          value: l.id,
+        };
+      });
+
+      const labelIds =
+        formattedLabels.length === 1
+          ? [formattedLabels[0].value]
+          : (
+              await enquirer.prompt<{ labelIds: string[] }>({
+                type: "multiselect",
+                name: "labelIds",
+                message: "Select labels",
+                choices: formattedLabels,
+              })
+            ).labelIds;
+
+      createInput.labelIds = labelIds;
+    }
+
+    const response = await client.createIssue({
+      labelIds: [],
+      ...createInput,
     });
 
     const newIssue = await response.issue;
