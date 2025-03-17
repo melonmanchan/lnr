@@ -1,6 +1,6 @@
 {
   "name": "lnr",
-  "version": "v0.0.13",
+  "version": "v0.0.14",
   "module": "src/index.ts",
   "type": "module",
   "private": true,
