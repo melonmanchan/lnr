@@ -73,11 +73,12 @@ export async function getIssues(
     issueStates: IssueStatus[];
     assignee?: string;
     cycle?: CycleState;
+    creator?: string;
     project?: string;
     freeformSearch?: string;
   },
 ): Promise<LnrIssue[]> {
-  const { issueStates, assignee, cycle, project, freeformSearch } =
+  const { issueStates, assignee, creator, cycle, project, freeformSearch } =
     searchParams;
 
   const stateFilter =
@@ -92,6 +93,16 @@ export async function getIssues(
         ? {}
         : { assignee: { isMe: { eq: true } } }
       : { assignee: { displayName: { containsIgnoreCase: assignee } } };
+
+  const creatorFilter = creator
+    ? {
+        creator: {
+          displayName: {
+            containsIgnoreCase: creator,
+          },
+        },
+      }
+    : {};
 
   const cycleFilter = cycle ? getCycleFilter(cycle) : {};
 
@@ -108,6 +119,7 @@ export async function getIssues(
     ...assigneeFilter,
     ...cycleFilter,
     ...contentFilter,
+    ...creatorFilter,
 
     ...(project ? { project: { name: { containsIgnoreCase: project } } } : {}),
   };

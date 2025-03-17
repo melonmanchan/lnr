@@ -65,12 +65,19 @@ const list = command({
       description: "Cycle filters (current, previous, next)",
     }),
 
+    creator: option({
+      type: optional(string),
+      long: "creator",
+      short: "cr",
+      description: "Creator name",
+    }),
+
     assignee: option({
       type: string,
       long: "assignee",
       short: "a",
       defaultValue: () => "@me",
-      description: "assignee",
+      description: "Assignee name",
     }),
 
     project: option({
@@ -88,7 +95,7 @@ const list = command({
     }),
   },
 
-  handler: async ({ status, assignee, project, cycle, query }) => {
+  handler: async ({ status, assignee, project, cycle, query, creator }) => {
     const config = await getConfig();
     const client = getLinearClient(config.linearApiKey);
 
@@ -97,10 +104,11 @@ const list = command({
 
       {
         issueStates: status,
+        freeformSearch: query,
         assignee,
         cycle,
         project,
-        freeformSearch: query,
+        creator,
       },
     );
 
