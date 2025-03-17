@@ -50,6 +50,7 @@ const LnrIssue = z.object({
 
 export type LnrIssue = z.infer<typeof LnrIssue>;
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const extractIssuesPage = (response: any) => response.issues;
 
 const getCycleFilter = (cycle: CycleState): { cycle: NullableCycleFilter } => {

@@ -44,15 +44,11 @@ export async function configExists(): Promise<boolean> {
 }
 
 async function readConfig(): Promise<ConfigSchemaV1 | null> {
-  try {
-    const configPath = getConfigPath();
-    const fileData = await fs.readFile(configPath, "utf-8");
-    const parsedData = JSON.parse(fileData);
+  const configPath = getConfigPath();
+  const fileData = await fs.readFile(configPath, "utf-8");
+  const parsedData = JSON.parse(fileData);
 
-    return ConfigSchemaV1.parse(parsedData);
-  } catch (error) {
-    throw error;
-  }
+  return ConfigSchemaV1.parse(parsedData);
 }
 
 export async function getConfig(): Promise<ConfigSchemaV1> {
@@ -64,17 +60,13 @@ export async function getConfig(): Promise<ConfigSchemaV1> {
 }
 
 export async function saveConfig(config: ConfigSchemaV1): Promise<string> {
-  try {
-    const configPath = getConfigPath();
+  const configPath = getConfigPath();
 
-    await fs.mkdir(path.dirname(configPath), { recursive: true });
+  await fs.mkdir(path.dirname(configPath), { recursive: true });
 
-    const fileData = JSON.stringify(config, null, 2);
+  const fileData = JSON.stringify(config, null, 2);
 
-    await fs.writeFile(configPath, fileData, "utf-8");
+  await fs.writeFile(configPath, fileData, "utf-8");
 
-    return configPath;
-  } catch (error) {
-    throw error;
-  }
+  return configPath;
 }

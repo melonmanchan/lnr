@@ -38,6 +38,7 @@ const getProjectsQuery = `
   ${pageInfoFragment}
 `;
 
+// biome-ignore lint/suspicious/noExplicitAny: TODO
 const extractProjectsPage = (response: any) => response.projects;
 
 export async function getProjects(

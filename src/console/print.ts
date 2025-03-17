@@ -1,5 +1,6 @@
 import Table from "cli-table3";
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export function printTable(values: any[]) {
   if (!values || values.length === 0) {
     return;

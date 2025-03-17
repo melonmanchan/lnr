@@ -135,8 +135,8 @@ const list = command({
     }
 
     const sortedIssues = mappedIssues.sort((a, b) => {
-      const aStatus = issueStatuses.indexOf(a._state!) ?? 0;
-      const bStatus = issueStatuses.indexOf(b._state!) ?? 0;
+      const aStatus = issueStatuses.indexOf(a._state) ?? 0;
+      const bStatus = issueStatuses.indexOf(b._state) ?? 0;
       return aStatus - bStatus;
     });
 
@@ -283,8 +283,8 @@ const create = command({
 
       const { descriptionPrompt } = makeDescription;
 
-      if (descriptionPrompt === "e" && hasEditorAvailable) {
-        const editorDescription = openTextEditor(config.editor!);
+      if (descriptionPrompt === "e" && hasEditorAvailable && config.editor) {
+        const editorDescription = openTextEditor(config.editor);
 
         description = editorDescription;
       } else {
@@ -541,7 +541,7 @@ const edit = command({
       });
 
       const newStatusId =
-        filterByStatus.length == 1
+        filterByStatus.length === 1
           ? filterByStatus[0].id
           : (
               await enquirer.prompt<{ statusId: string }>({

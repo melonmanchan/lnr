@@ -6,6 +6,7 @@ export async function paginate<T, V>(
   client: LinearGraphQLClient,
   query: string,
   variables: V,
+  // biome-ignore lint/suspicious/noExplicitAny: TODO
   extractPage: (response: any) => {
     nodes: T[];
     pageInfo: PageInfo;
