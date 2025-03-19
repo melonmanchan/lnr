@@ -159,6 +159,7 @@ const create = command({
       short: "t",
       description: "Issue title",
     }),
+
     description: option({
       type: optional(string),
       long: "description",
@@ -440,7 +441,8 @@ const edit = command({
     }),
 
     status: option({
-      type: optional(oneOf<IssueStatus>(issueStatuses)),
+      // type: optional(oneOf<IssueStatus>(issueStatuses)),
+      type: optional(string),
       long: "status",
       short: "s",
       description: `Update status ${issueStatuses.join(", ")}`,
@@ -529,7 +531,9 @@ const edit = command({
       const { nodes } = states;
 
       const filterByStatus = nodes.filter(
-        (s: WorkflowState) => s.type === status,
+        (s: WorkflowState) =>
+          s.type === status ||
+          s.name.toLowerCase().includes(status.toLowerCase()),
       );
 
       if (filterByStatus.length === 0) {
