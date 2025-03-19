@@ -337,7 +337,11 @@ const create = command({
               })
             ).labelIds;
 
-      createInput.labelIds = labelIds;
+      const actualIds: string[] = labelIds
+        .map((id) => formattedLabels.find((l) => l.name === id)?.value)
+        .filter((v): v is string => !!v);
+
+      createInput.labelIds = actualIds;
     }
 
     if (priority) {
