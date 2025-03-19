@@ -1,5 +1,4 @@
 import { execSync } from "node:child_process";
-// import config from "../config.ts";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";

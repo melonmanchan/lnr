@@ -3,8 +3,8 @@ import chalk from "chalk";
 import { run, subcommands } from "cmd-ts";
 import packageJson from "../package.json" with { type: "json" };
 import { auth } from "./commands/auth.ts";
-import { issue } from "./commands/issue.ts";
-import { project } from "./commands/project.ts";
+import { issue } from "./commands/issue/index.ts";
+import { project } from "./commands/project/index.ts";
 import { configExists } from "./config/config.ts";
 
 const hasConfig = await configExists();
