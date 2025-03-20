@@ -5,9 +5,9 @@ import type {
 } from "@linear/sdk/dist/_generated_documents.d.ts";
 import * as z from "zod";
 import {
-  issueStatuses,
   type CycleState,
   type IssueStatus,
+  issueStatuses,
 } from "../../types.ts";
 import { pageInfoFragment } from "./pageInfo.ts";
 import { paginate } from "./paginate.ts";
