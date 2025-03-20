@@ -4,7 +4,11 @@ import type {
   NullableCycleFilter,
 } from "@linear/sdk/dist/_generated_documents.d.ts";
 import * as z from "zod";
-import type { CycleState, IssueStatus } from "../../types.ts";
+import {
+  issueStatuses,
+  type CycleState,
+  type IssueStatus,
+} from "../../types.ts";
 import { pageInfoFragment } from "./pageInfo.ts";
 import { paginate } from "./paginate.ts";
 
@@ -67,11 +71,42 @@ const getCycleFilter = (cycle: CycleState): { cycle: NullableCycleFilter } => {
   }
 };
 
+const getIssueStatusFilter = (issueStates: (IssueStatus | string)[]) => {
+  const validIssueTypes: IssueStatus[] = issueStates.filter((s) =>
+    issueStatuses.includes(s),
+  );
+
+  const issueNameFilters = issueStates.filter(
+    (s) => !issueStatuses.includes(s),
+  );
+
+  const stateFilter =
+    validIssueTypes.length === 0
+      ? { state: { type: { nin: ["completed", "canceled"] } } }
+      : { state: { type: { in: issueStates } } };
+
+  const nameFilter =
+    issueNameFilters.length === 0
+      ? {}
+      : {
+          or: issueNameFilters.map((name) => ({
+            state: {
+              name: { containsIgnoreCase: name },
+            },
+          })),
+        };
+
+  return {
+    stateFilter,
+    nameFilter,
+  };
+};
+
 export async function getIssues(
   { client }: LinearClient,
 
   searchParams: {
-    issueStates: IssueStatus[];
+    issueStates: (IssueStatus | string)[];
     assignee?: string;
     cycle?: CycleState;
     creator?: string;
@@ -82,10 +117,7 @@ export async function getIssues(
   const { issueStates, assignee, creator, cycle, project, freeformSearch } =
     searchParams;
 
-  const stateFilter =
-    issueStates.length === 0
-      ? { state: { type: { nin: ["completed", "canceled"] } } }
-      : { state: { type: { in: issueStates } } };
+  const { stateFilter, nameFilter } = getIssueStatusFilter(issueStates);
 
   // TODO: This is really messy
   const assigneeFilter =
@@ -117,6 +149,7 @@ export async function getIssues(
 
   const query: IssueFilter = {
     ...stateFilter,
+    ...nameFilter,
     ...assigneeFilter,
     ...cycleFilter,
     ...contentFilter,

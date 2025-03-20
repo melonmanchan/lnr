@@ -28,7 +28,7 @@ const list = command({
   name: "list",
   args: {
     status: multioption({
-      type: array(oneOf<IssueStatus>(issueStatuses)),
+      type: array(string),
       long: "status",
       short: "s",
       description:
