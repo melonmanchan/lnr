@@ -1,7 +1,7 @@
 import { boolean, command, flag, positional, string } from "cmd-ts";
 
+import open from "open";
 import { getConfig } from "../../config/config.ts";
-import { printTable } from "../../console/print.ts";
 import { getLinearClient } from "../../linear/client.ts";
 import { getProjects } from "../../linear/requests/getProjects.ts";
 
