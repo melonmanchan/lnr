@@ -1,5 +1,6 @@
 import process from "node:process";
 import { boolean, command, flag, positional, string } from "cmd-ts";
+import open from "open";
 import { getConfig } from "../../config/config.ts";
 import { getLinearClient } from "../../linear/client.ts";
 
