@@ -1,4 +1,4 @@
-import chalk, { type ChalkInstance } from "chalk";
+import chalk from "chalk";
 import {
   array,
   command,
@@ -14,15 +14,6 @@ import { getLinearClient } from "../../linear/client.ts";
 import { getIssues } from "../../linear/requests/getIssues.ts";
 import { type IssueStatus, cycleStates, issueStatuses } from "../../types.ts";
 import truncate from "../../utils/truncate.ts";
-
-const statusColors: { [key: IssueStatus]: ChalkInstance } = {
-  canceled: chalk.red,
-  completed: chalk.green,
-  started: chalk.blue,
-  unstarted: chalk.yellow,
-  backlog: chalk.magenta,
-  triage: chalk.cyan,
-};
 
 const list = command({
   name: "list",
@@ -90,7 +81,7 @@ const list = command({
     );
 
     const mappedIssues = issues.map((i) => {
-      const stateColorFn = statusColors[i.state?.type as IssueStatus] ?? chalk;
+      const stateColorFn = chalk.hex(i.state.color);
 
       return {
         ID: `[${i.identifier}]`,
