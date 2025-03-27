@@ -90,7 +90,7 @@ const list = command({
     );
 
     const mappedIssues = issues.map((i) => {
-      const stateColorFn = statusColors[i.state?.type as IssueStatus] ?? chalk;
+      const stateColorFn = chalk.hex(i.state.color);
 
       return {
         ID: `[${i.identifier}]`,

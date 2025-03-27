@@ -21,6 +21,7 @@ const getIssuesQuery = `query GetIssues($filter: IssueFilter!, $after: String) {
       state {
         name
         type
+        color
       }
       assignee {
         name
@@ -44,7 +45,7 @@ const LnrIssue = z.object({
   id: z.string(),
   identifier: z.string(),
   title: z.string(),
-  state: z.object({ name: z.string(), type: z.string() }),
+  state: z.object({ name: z.string(), type: z.string(), color: z.string() }),
   assignee: z.union([
     z.null(),
     z.object({ name: z.string(), displayName: z.string() }),
