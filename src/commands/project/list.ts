@@ -10,6 +10,7 @@ import {
 import { getConfig } from "../../config/config.ts";
 import { printOutput } from "../../console/print.ts";
 import { getLinearClient } from "../../linear/client.ts";
+import { formatProjectForOutput } from "../../linear/formatters.ts";
 import { getProjects } from "../../linear/requests/getProjects.ts";
 import { type OutputFormat, outputFormats } from "../../types.ts";
 
@@ -58,32 +59,11 @@ const list = command({
 			process.exit(0);
 		}
 
-		const tableProjects = projects.map((p) => {
-			return {
-				Name: p.name,
-				Status: p.status.name,
-				Url: p.url,
-			};
-		});
+		const formattedProjects = projects.map((project) =>
+			formatProjectForOutput(project, format),
+		);
 
-		const jsonProjects = projects.map((p) => {
-			return {
-				id: p.id,
-				name: p.name,
-				slugId: p.slugId,
-				status: p.status.name,
-				url: p.url ?? null,
-			};
-		});
-
-		switch (format) {
-			case "table":
-				printOutput(tableProjects, format);
-				break;
-			case "json":
-				printOutput(jsonProjects, format);
-				break;
-		}
+		printOutput(formattedProjects, format);
 
 		process.exit(0);
 	},

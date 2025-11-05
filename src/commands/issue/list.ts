@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import {
 	array,
 	command,
@@ -11,6 +10,7 @@ import {
 import { getConfig } from "../../config/config.ts";
 import { printOutput } from "../../console/print.ts";
 import { getLinearClient } from "../../linear/client.ts";
+import { formatIssueForOutput } from "../../linear/formatters.ts";
 import { getIssues } from "../../linear/requests/getIssues.ts";
 import {
 	cycleStates,
@@ -19,7 +19,6 @@ import {
 	type OutputFormat,
 	outputFormats,
 } from "../../types.ts";
-import truncate from "../../utils/truncate.ts";
 
 const list = command({
 	name: "list",
@@ -127,41 +126,11 @@ const list = command({
 			return aStatus - bStatus;
 		});
 
-		const tableIssues = sortedIssues.map((issue) => {
-			const statusName = issue.state?.name ?? "";
-			const stateColorFn = issue.state?.color
-				? chalk.hex(issue.state.color)
-				: (value: string) => value;
+		const formattedIssues = sortedIssues.map((issue) =>
+			formatIssueForOutput(issue, format),
+		);
 
-			return {
-				ID: `[${issue.identifier}]`,
-				Title: truncate(issue.title, 64),
-				Status: statusName ? stateColorFn(statusName) : "",
-				Assignee: issue.assignee?.displayName,
-				Creator: issue.creator?.displayName,
-			};
-		});
-
-		const jsonIssues = sortedIssues.map((issue) => {
-			return {
-				id: issue.id,
-				identifier: issue.identifier,
-				title: issue.title,
-				status: issue.state?.name ?? null,
-				statusType: issue.state?.type ?? null,
-				assignee: issue.assignee?.displayName ?? null,
-				creator: issue.creator?.displayName ?? null,
-			};
-		});
-
-		switch (format) {
-			case "table":
-				printOutput(tableIssues, format);
-				break;
-			case "json":
-				printOutput(jsonIssues, format);
-				break;
-		}
+		printOutput(formattedIssues, format);
 
 		process.exit(0);
 	},
