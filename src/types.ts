@@ -1,10 +1,10 @@
 export const issueStatuses = [
-  "canceled",
-  "completed",
-  "started",
-  "unstarted",
-  "backlog",
-  "triage",
+	"canceled",
+	"completed",
+	"started",
+	"unstarted",
+	"backlog",
+	"triage",
 ];
 
 export type IssueStatus = (typeof issueStatuses)[number];

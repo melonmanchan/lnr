@@ -10,6 +10,6 @@
     "check": "deno check src/**/*.ts && npx biome check src/**/*.ts"
   },
   "imports": {
-    "@std/assert": "jsr:@std/assert@1"
+    "@std/assert": "jsr:@std/assert@^1.0.15"
   }
 }

@@ -5,7 +5,7 @@ import list from "./list.ts";
 import view from "./view.ts";
 
 export const issue = subcommands({
-  name: "issue",
-  description: "Invidividal issue management",
-  cmds: { create, view, list, edit },
+	name: "issue",
+	description: "Invidividal issue management",
+	cmds: { create, view, list, edit },
 });

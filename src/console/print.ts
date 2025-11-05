@@ -2,48 +2,48 @@ import Table from "cli-table3";
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export function printTable(values: any[]) {
-  if (!values || values.length === 0) {
-    return;
-  }
+	if (!values || values.length === 0) {
+		return;
+	}
 
-  const keys = Object.keys(values[0])
-    .filter((key) => !key.startsWith("_"))
-    .filter((key) => {
-      return values.some((row) => row[key] !== null && row[key] !== undefined);
-    });
+	const keys = Object.keys(values[0])
+		.filter((key) => !key.startsWith("_"))
+		.filter((key) => {
+			return values.some((row) => row[key] !== null && row[key] !== undefined);
+		});
 
-  const table = new Table({
-    head: keys,
-    truncate: "true",
+	const table = new Table({
+		head: keys,
+		truncate: "true",
 
-    chars: {
-      top: "",
-      "top-mid": "",
-      "top-left": "",
-      "top-right": "",
-      bottom: "",
-      "bottom-mid": "",
-      "bottom-left": "",
-      "bottom-right": "",
-      left: "",
-      "left-mid": "",
-      mid: "",
-      "mid-mid": "",
-      right: "",
-      "right-mid": "",
-      middle: " ",
-    },
+		chars: {
+			top: "",
+			"top-mid": "",
+			"top-left": "",
+			"top-right": "",
+			bottom: "",
+			"bottom-mid": "",
+			"bottom-left": "",
+			"bottom-right": "",
+			left: "",
+			"left-mid": "",
+			mid: "",
+			"mid-mid": "",
+			right: "",
+			"right-mid": "",
+			middle: " ",
+		},
 
-    style: { "padding-left": 0, "padding-right": 0 },
-  });
+		style: { "padding-left": 0, "padding-right": 0 },
+	});
 
-  for (const value of values) {
-    table.push([
-      ...keys.map((key) => {
-        return value[key];
-      }),
-    ]);
-  }
+	for (const value of values) {
+		table.push([
+			...keys.map((key) => {
+				return value[key];
+			}),
+		]);
+	}
 
-  console.log(table.toString());
+	console.log(table.toString());
 }
