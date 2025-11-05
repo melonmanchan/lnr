@@ -17,3 +17,7 @@ export type CycleState = (typeof issueStatuses)[number];
 export const issuePriorities = ["none", "urgent", "high", "normal", "low"];
 
 export type IssuePriority = (typeof issuePriorities)[number];
+
+export const outputFormats = ["table", "json"] as const;
+
+export type OutputFormat = (typeof outputFormats)[number];

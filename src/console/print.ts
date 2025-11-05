@@ -1,4 +1,5 @@
 import Table from "cli-table3";
+import type { OutputFormat } from "../types.ts";
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export function printTable(values: any[]) {
@@ -46,4 +47,15 @@ export function printTable(values: any[]) {
 	}
 
 	console.log(table.toString());
+}
+
+export function printOutput(values: any[], format: OutputFormat) {
+	const safeValues = values ?? [];
+
+	if (format === "json") {
+		console.log(JSON.stringify(safeValues, null, 2));
+		return;
+	}
+
+	printTable(safeValues);
 }

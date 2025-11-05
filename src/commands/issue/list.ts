@@ -1,4 +1,4 @@
-import chalk, { type ChalkInstance } from "chalk";
+import chalk from "chalk";
 import {
 	array,
 	command,
@@ -9,20 +9,17 @@ import {
 	string,
 } from "cmd-ts";
 import { getConfig } from "../../config/config.ts";
-import { printTable } from "../../console/print.ts";
+import { printOutput } from "../../console/print.ts";
 import { getLinearClient } from "../../linear/client.ts";
 import { getIssues } from "../../linear/requests/getIssues.ts";
-import { cycleStates, type IssueStatus, issueStatuses } from "../../types.ts";
+import {
+	cycleStates,
+	type IssueStatus,
+	issueStatuses,
+	type OutputFormat,
+	outputFormats,
+} from "../../types.ts";
 import truncate from "../../utils/truncate.ts";
-
-const _statusColors: { [key: IssueStatus]: ChalkInstance } = {
-	canceled: chalk.red,
-	completed: chalk.green,
-	started: chalk.blue,
-	unstarted: chalk.yellow,
-	backlog: chalk.magenta,
-	triage: chalk.cyan,
-};
 
 const list = command({
 	name: "list",
@@ -70,9 +67,24 @@ const list = command({
 			short: "q",
 			description: "Freeform text search",
 		}),
+
+		format: option({
+			type: oneOf<OutputFormat>(outputFormats),
+			long: "format",
+			description: "Output format (table or json)",
+			defaultValue: () => "table" as OutputFormat,
+		}),
 	},
 
-	handler: async ({ status, assignee, project, cycle, query, creator }) => {
+	handler: async ({
+		status,
+		assignee,
+		project,
+		cycle,
+		query,
+		creator,
+		format,
+	}) => {
 		const config = await getConfig();
 		const client = getLinearClient(config.linearApiKey);
 
@@ -89,37 +101,69 @@ const list = command({
 			},
 		);
 
-		const mappedIssues = issues.map((i) => {
-			const stateColorFn = chalk.hex(i.state.color);
+		if (!issues.length) {
+			if (format === "json") {
+				printOutput([], format);
+			} else {
+				console.info("No issues found");
+			}
 
-			return {
-				ID: `[${i.identifier}]`,
-				Title: truncate(i.title, 64),
-				Status: stateColorFn(i.state?.name),
-				Assignee: i.assignee?.displayName,
-				Creator: i.creator?.displayName,
-				_state: i.state?.type,
-			};
-		});
-
-		if (!mappedIssues.length) {
-			console.info("No issues found");
 			return;
 		}
 
-		const sortedIssues = mappedIssues.sort((a, b) => {
-			const aStatus = issueStatuses.indexOf(a._state) ?? 0;
-			const bStatus = issueStatuses.indexOf(b._state) ?? 0;
+		const getStatusOrder = (stateType?: IssueStatus | null) => {
+			if (!stateType) {
+				return Number.MAX_SAFE_INTEGER;
+			}
+
+			const index = issueStatuses.indexOf(stateType);
+
+			return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+		};
+
+		const sortedIssues = [...issues].sort((a, b) => {
+			const aStatus = getStatusOrder(a.state?.type as IssueStatus | undefined);
+			const bStatus = getStatusOrder(b.state?.type as IssueStatus | undefined);
 			return aStatus - bStatus;
 		});
 
-		const message = project
-			? `Issues in project ${chalk.bold(project)}`
-			: `Issues assigned to ${chalk.bold(assignee)}`;
+		const tableIssues = sortedIssues.map((issue) => {
+			const statusName = issue.state?.name ?? "";
+			const stateColorFn = issue.state?.color
+				? chalk.hex(issue.state.color)
+				: (value: string) => value;
 
-		console.log(message);
+			return {
+				ID: `[${issue.identifier}]`,
+				Title: truncate(issue.title, 64),
+				Status: statusName ? stateColorFn(statusName) : "",
+				Assignee: issue.assignee?.displayName,
+				Creator: issue.creator?.displayName,
+			};
+		});
 
-		printTable(sortedIssues);
+		const jsonIssues = sortedIssues.map((issue) => {
+			return {
+				id: issue.id,
+				identifier: issue.identifier,
+				title: issue.title,
+				status: issue.state?.name ?? null,
+				statusType: issue.state?.type ?? null,
+				assignee: issue.assignee?.displayName ?? null,
+				creator: issue.creator?.displayName ?? null,
+			};
+		});
+
+		switch (format) {
+			case "table":
+				printOutput(tableIssues, format);
+				break;
+			case "json":
+				printOutput(jsonIssues, format);
+				break;
+		}
+
+		process.exit(0);
 	},
 });
 
