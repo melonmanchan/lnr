@@ -233,7 +233,7 @@ const edit = command({
 				const response = await enquirer.prompt<{ labelIds: string[] }>({
 					type: "multiselect",
 					name: "labelIds",
-					message: "Select labels",
+					message: "Select labels to add",
 					choices: formattedLabels,
 				});
 
