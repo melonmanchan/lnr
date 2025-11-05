@@ -177,7 +177,7 @@ const create = command({
 			const noGroups = availableLabels.nodes.filter((l) => !l.isGroup);
 
 			if (!noGroups.length) {
-				console.log('No labels found for query "${label}"');
+				console.log(`No labels found for query "${label}"`);
 				process.exit(1);
 			}
 
@@ -188,23 +188,24 @@ const create = command({
 				};
 			});
 
-			const labelIds =
-				formattedLabels.length === 1
-					? [formattedLabels[0].value]
-					: (
-							await enquirer.prompt<{ labelIds: string[] }>({
-								type: "multiselect",
-								name: "labelIds",
-								message: "Select labels",
-								choices: formattedLabels,
-							})
-						).labelIds;
+			if (formattedLabels.length === 1) {
+				createInput.labelIds = [formattedLabels[0].value];
+			} else {
+				const labelIds = (
+					await enquirer.prompt<{ labelIds: string[] }>({
+						type: "multiselect",
+						name: "labelIds",
+						message: "Select labels",
+						choices: formattedLabels,
+					})
+				).labelIds;
 
-			const actualIds: string[] = labelIds
-				.map((id) => formattedLabels.find((l) => l.name === id)?.value)
-				.filter((v): v is string => !!v);
+				const actualIds: string[] = labelIds
+					.map((id) => formattedLabels.find((l) => l.name === id)?.value)
+					.filter((v): v is string => !!v);
 
-			createInput.labelIds = actualIds;
+				createInput.labelIds = actualIds;
+			}
 		}
 
 		if (priority) {
@@ -212,7 +213,6 @@ const create = command({
 		}
 
 		const response = await client.createIssue({
-			labelIds: [],
 			...createInput,
 		});
 
