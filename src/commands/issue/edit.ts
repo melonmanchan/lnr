@@ -1,5 +1,5 @@
 import process from "node:process";
-import type { User, WorkflowState } from "@linear/sdk";
+import type { Issue, Team, User, WorkflowState } from "@linear/sdk";
 import chalk from "chalk";
 import { command, oneOf, option, optional, positional, string } from "cmd-ts";
 import enquirer from "enquirer";
@@ -58,6 +58,13 @@ const edit = command({
 			short: "p",
 			description: `Update priority (${issuePriorities.join(", ")})`,
 		}),
+
+		label: option({
+			type: optional(string),
+			long: "label",
+			short: "l",
+			description: "Label name",
+		}),
 	},
 
 	handler: async ({
@@ -67,6 +74,7 @@ const edit = command({
 		assignee,
 		priority,
 		status,
+		label,
 	}) => {
 		const config = await getConfig();
 		const client = getLinearClient(config.linearApiKey);
@@ -86,6 +94,33 @@ const edit = command({
 			updateData.priority = issuePriorities.indexOf(priority);
 		}
 
+		let cachedIssue: Issue | null = null;
+		let cachedTeam: Team | null = null;
+
+		const getIssue = async () => {
+			if (!cachedIssue) {
+				cachedIssue = await client.issue(issue);
+			}
+
+			return cachedIssue;
+		};
+
+		const getTeam = async () => {
+			if (!cachedTeam) {
+				const apiIssue = await getIssue();
+				const team = await apiIssue.team;
+
+				if (!team) {
+					console.warn("Could not find team for issue");
+					process.exit(1);
+				}
+
+				cachedTeam = team;
+			}
+
+			return cachedTeam;
+		};
+
 		if (assignee) {
 			const assignees = await client.users({
 				filter: {
@@ -96,7 +131,7 @@ const edit = command({
 			});
 
 			if (assignees.nodes.length === 0) {
-				console.warn('No assignees found for "${assignee}"');
+				console.warn(`No assignees found for "${assignee}"`);
 				process.exit(1);
 			}
 
@@ -122,14 +157,7 @@ const edit = command({
 		}
 
 		if (status) {
-			const apiIssue = await client.issue(issue);
-			const team = await apiIssue.team;
-
-			if (!team) {
-				console.warn("Could not find team for issue");
-				process.exit(1);
-			}
-
+			const team = await getTeam();
 			const states = await team.states();
 
 			const { nodes } = states;
@@ -167,7 +195,89 @@ const edit = command({
 			updateData.stateId = newStatusId;
 		}
 
-		if (Object.keys(updateData).length === 0) {
+		if (label) {
+			const team = await getTeam();
+			const availableLabels = await team.labels({
+				filter: {
+					name: {
+						containsIgnoreCase: label,
+					},
+				},
+			});
+
+			const labelNodes = availableLabels.nodes.filter((l) => !l.isGroup);
+
+			if (labelNodes.length === 0) {
+				console.warn(`Could not find labels matching "${label}"`);
+				process.exit(1);
+			}
+
+			const issueLabels = await (await getIssue()).labels();
+			const currentLabelIds = issueLabels.nodes.map((l) => l.id);
+
+			const formattedLabels = labelNodes.map((l) => {
+				return {
+					name: l.name,
+					value: l.id,
+					enabled: currentLabelIds.includes(l.id),
+				};
+			});
+
+			const formattedLabelIds = formattedLabels.map((l) => l.value);
+
+			let selectedLabelIds: string[];
+
+			if (formattedLabels.length === 1) {
+				selectedLabelIds = [formattedLabels[0].value];
+			} else {
+				const response = await enquirer.prompt<{ labelIds: string[] }>({
+					type: "multiselect",
+					name: "labelIds",
+					message: "Select labels",
+					choices: formattedLabels,
+				});
+
+				selectedLabelIds = response.labelIds;
+			}
+
+			const formattedLabelMap = new Map<string, string>();
+			for (const labelChoice of formattedLabels) {
+				formattedLabelMap.set(labelChoice.name, labelChoice.value);
+				formattedLabelMap.set(labelChoice.value, labelChoice.value);
+			}
+
+			const selectedLabelValues = selectedLabelIds.map((id) => {
+				return formattedLabelMap.get(id) ?? id;
+			});
+
+			const preservedLabelIds = currentLabelIds.filter(
+				(id) => !formattedLabelIds.includes(id),
+			);
+
+			const nextLabelIds = Array.from(
+				new Set([...preservedLabelIds, ...selectedLabelValues]),
+			);
+
+			const currentSet = new Set(currentLabelIds);
+			const nextSet = new Set(nextLabelIds);
+
+			let hasChanged = currentSet.size !== nextSet.size;
+
+			if (!hasChanged) {
+				for (const id of nextSet) {
+					if (!currentSet.has(id)) {
+						hasChanged = true;
+						break;
+					}
+				}
+			}
+
+			if (hasChanged) {
+				updateData.labelIds = nextLabelIds;
+			}
+		}
+
+		if (Object.keys(updateData).length === 1) {
 			console.warn("Nothing to update");
 			process.exit(1);
 		}

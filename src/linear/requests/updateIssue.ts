@@ -31,6 +31,7 @@ export type UpdateIssueData = {
 	title?: string;
 	description?: string;
 	priority?: number;
+	labelIds?: string[];
 };
 
 export async function updateIssue(
@@ -44,5 +45,7 @@ export async function updateIssue(
 		input,
 	});
 
-	return IssueUpdateResponse.parse(resp).issueUpdate.issue;
+	const parsed: IssueUpdateResponse = IssueUpdateResponse.parse(resp);
+
+	return parsed.issueUpdate.issue;
 }
