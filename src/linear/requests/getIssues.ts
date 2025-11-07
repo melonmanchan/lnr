@@ -102,14 +102,10 @@ const getIssueStatusFilter = (issueStates: (IssueStatus | string)[]) => {
 };
 
 const getLabelFilter = (
-	label: string | undefined,
-): { label: LinearDocument.IssueLabelCollectionFilter } => {
-	if (label) {
-		return { label: {} };
-	}
-
+	label: string,
+): { labels: LinearDocument.IssueLabelCollectionFilter } => {
 	return {
-		label: {
+		labels: {
 			some: {
 				name: { containsIgnoreCase: label },
 			},
@@ -160,7 +156,7 @@ export async function getIssues(
 			}
 		: {};
 
-	const labelFilter = getLabelFilter(label);
+	const labelFilter = label ? getLabelFilter(label) : {};
 
 	const cycleFilter = cycle ? getCycleFilter(cycle) : {};
 
