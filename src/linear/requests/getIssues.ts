@@ -101,6 +101,22 @@ const getIssueStatusFilter = (issueStates: (IssueStatus | string)[]) => {
 	};
 };
 
+const getLabelFilter = (
+	label: string | undefined,
+): { label: LinearDocument.IssueLabelCollectionFilter } => {
+	if (label) {
+		return { label: {} };
+	}
+
+	return {
+		label: {
+			some: {
+				name: { containsIgnoreCase: label },
+			},
+		},
+	};
+};
+
 export async function getIssues(
 	{ client }: LinearClient,
 
@@ -111,10 +127,18 @@ export async function getIssues(
 		creator?: string;
 		project?: string;
 		freeformSearch?: string;
+		label?: string;
 	},
 ): Promise<LnrIssue[]> {
-	const { issueStates, assignee, creator, cycle, project, freeformSearch } =
-		searchParams;
+	const {
+		issueStates,
+		assignee,
+		creator,
+		cycle,
+		project,
+		freeformSearch,
+		label,
+	} = searchParams;
 
 	const { stateFilter, nameFilter } = getIssueStatusFilter(issueStates);
 
@@ -136,6 +160,8 @@ export async function getIssues(
 			}
 		: {};
 
+	const labelFilter = getLabelFilter(label);
+
 	const cycleFilter = cycle ? getCycleFilter(cycle) : {};
 
 	const contentFilter = freeformSearch
@@ -153,7 +179,7 @@ export async function getIssues(
 		...cycleFilter,
 		...contentFilter,
 		...creatorFilter,
-
+		...labelFilter,
 		...(project ? { project: { name: { containsIgnoreCase: project } } } : {}),
 	};
 

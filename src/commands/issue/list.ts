@@ -67,6 +67,13 @@ const list = command({
 			description: "Freeform text search",
 		}),
 
+		label: option({
+			type: optional(string),
+			long: "label",
+			short: "l",
+			description: "Issue label",
+		}),
+
 		format: option({
 			type: oneOf<OutputFormat>(outputFormats),
 			long: "format",
@@ -82,6 +89,7 @@ const list = command({
 		cycle,
 		query,
 		creator,
+		label,
 		format,
 	}) => {
 		const config = await getConfig();
@@ -97,6 +105,7 @@ const list = command({
 				cycle,
 				project,
 				creator,
+				label,
 			},
 		);
 
