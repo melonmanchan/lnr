@@ -66,11 +66,11 @@ const list = command({
 			description: "Freeform text search",
 		}),
 
-		label: option({
-			type: optional(string),
+		label: multioption({
+			type: array(string),
 			long: "label",
 			short: "l",
-			description: "Issue label",
+			description: "Issue label(s)",
 		}),
 
 		format: option({
