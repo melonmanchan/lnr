@@ -46,10 +46,9 @@ const list = command({
 		}),
 
 		assignee: option({
-			type: string,
+			type: optional(string),
 			long: "assignee",
 			short: "a",
-			defaultValue: () => "@me",
 			description: "Assignee name",
 		}),
 
