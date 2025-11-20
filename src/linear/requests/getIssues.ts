@@ -113,6 +113,62 @@ const getLabelFilter = (
 	};
 };
 
+const getContentFilter = (
+	query: string,
+): { searchableContent: LinearDocument.ContentComparator } => {
+	return {
+		searchableContent: {
+			contains: query,
+		},
+	};
+};
+
+const getCreatorFilter = (
+	creator: string,
+): { creator: LinearDocument.UserFilter } => {
+	return {
+		creator: {
+			displayName: {
+				containsIgnoreCase: creator,
+			},
+		},
+	};
+};
+
+const getProjectFilter = (
+	project: string,
+): { project: LinearDocument.ProjectFilter } => {
+	return {
+		project: {
+			name: {
+				containsIgnoreCase: project,
+			},
+		},
+	};
+};
+
+const getAssigneeFilter = (
+	assignee: string,
+): { assignee: LinearDocument.UserFilter } => {
+	if (assignee === "@me") {
+		return {
+			assignee: {
+				isMe: {
+					eq: true,
+				},
+			},
+		};
+	}
+
+	return {
+		assignee: {
+			displayName: {
+				containsIgnoreCase: assignee,
+			},
+		},
+	};
+};
+
 export async function getIssues(
 	{ client }: LinearClient,
 
@@ -137,36 +193,12 @@ export async function getIssues(
 	} = searchParams;
 
 	const { stateFilter, nameFilter } = getIssueStatusFilter(issueStates);
-
-	// TODO: This is really messy
-	const assigneeFilter =
-		assignee === "@me"
-			? project || freeformSearch || assignee === undefined
-				? {}
-				: { assignee: { isMe: { eq: true } } }
-			: { assignee: { displayName: { containsIgnoreCase: assignee } } };
-
-	const creatorFilter = creator
-		? {
-				creator: {
-					displayName: {
-						containsIgnoreCase: creator,
-					},
-				},
-			}
-		: {};
-
+	const assigneeFilter = assignee ? getAssigneeFilter(assignee) : {};
 	const labelFilter = label ? getLabelFilter(label) : {};
-
 	const cycleFilter = cycle ? getCycleFilter(cycle) : {};
-
-	const contentFilter = freeformSearch
-		? {
-				searchableContent: {
-					contains: freeformSearch,
-				},
-			}
-		: {};
+	const contentFilter = freeformSearch ? getContentFilter(freeformSearch) : {};
+	const creatorFilter = creator ? getCreatorFilter(creator) : {};
+	const projectFilter = project ? getProjectFilter(project) : {};
 
 	const query: LinearDocument.IssueFilter = {
 		...stateFilter,
@@ -176,7 +208,7 @@ export async function getIssues(
 		...contentFilter,
 		...creatorFilter,
 		...labelFilter,
-		...(project ? { project: { name: { containsIgnoreCase: project } } } : {}),
+		...projectFilter,
 	};
 
 	const resp = await paginate<LnrIssue, { filter: LinearDocument.IssueFilter }>(
