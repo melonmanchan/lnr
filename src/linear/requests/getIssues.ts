@@ -149,6 +149,16 @@ const getProjectFilter = (
 	};
 };
 
+const getTeamFilter = (team: string[]): { team: LinearDocument.TeamFilter } => {
+	return {
+		team: {
+			or: team.map((t) => ({
+				name: { containsIgnoreCase: t },
+			})),
+		},
+	};
+};
+
 const getAssigneeFilter = (
 	assignee: string,
 ): { assignee: LinearDocument.UserFilter } => {
@@ -181,6 +191,7 @@ export async function getIssues(
 		creator?: string;
 		project?: string;
 		freeformSearch?: string;
+		team: string[];
 		label: string[];
 	},
 ): Promise<LnrIssue[]> {
@@ -191,12 +202,14 @@ export async function getIssues(
 		cycle,
 		project,
 		freeformSearch,
+		team,
 		label,
 	} = searchParams;
 
 	const { stateFilter, nameFilter } = getIssueStatusFilter(issueStates);
 	const assigneeFilter = assignee ? getAssigneeFilter(assignee) : {};
 
+	const teamFilter = team.length > 0 ? getTeamFilter(team) : {};
 	const labelFilter = label.length > 0 ? getLabelFilter(label) : {};
 
 	const cycleFilter = cycle ? getCycleFilter(cycle) : {};
@@ -213,6 +226,7 @@ export async function getIssues(
 		...creatorFilter,
 		...labelFilter,
 		...projectFilter,
+		...teamFilter,
 	};
 
 	const resp = await paginate<LnrIssue, { filter: LinearDocument.IssueFilter }>(

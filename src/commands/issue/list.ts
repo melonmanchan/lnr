@@ -73,6 +73,13 @@ const list = command({
 			description: "Issue label(s)",
 		}),
 
+		team: multioption({
+			type: array(string),
+			long: "team",
+			short: "t",
+			description: "Issue team",
+		}),
+
 		format: option({
 			type: oneOf<OutputFormat>(outputFormats),
 			long: "format",
@@ -89,6 +96,7 @@ const list = command({
 		query,
 		creator,
 		label,
+		team,
 		format,
 	}) => {
 		const config = await getConfig();
@@ -101,6 +109,7 @@ const list = command({
 				issueStates: status,
 				freeformSearch: query,
 				assignee,
+				team,
 				cycle,
 				project,
 				creator,
