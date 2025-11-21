@@ -126,25 +126,27 @@ const getContentFilter = (
 };
 
 const getCreatorFilter = (
-	creator: string,
+	creators: string[],
 ): { creator: LinearDocument.UserFilter } => {
 	return {
 		creator: {
-			displayName: {
-				containsIgnoreCase: creator,
-			},
+			or: creators.map((creator) => ({
+				displayName: {
+					containsIgnoreCase: creator,
+				},
+			})),
 		},
 	};
 };
 
 const getProjectFilter = (
-	project: string,
+	projects: string[],
 ): { project: LinearDocument.ProjectFilter } => {
 	return {
 		project: {
-			name: {
-				containsIgnoreCase: project,
-			},
+			or: projects.map((p) => ({
+				name: { containsIgnoreCase: p },
+			})),
 		},
 	};
 };
@@ -160,23 +162,15 @@ const getTeamFilter = (team: string[]): { team: LinearDocument.TeamFilter } => {
 };
 
 const getAssigneeFilter = (
-	assignee: string,
+	assignees: string[],
 ): { assignee: LinearDocument.UserFilter } => {
-	if (assignee === "@me") {
-		return {
-			assignee: {
-				isMe: {
-					eq: true,
-				},
-			},
-		};
-	}
-
 	return {
 		assignee: {
-			displayName: {
-				containsIgnoreCase: assignee,
-			},
+			or: assignees.map((assignee) => ({
+				displayName: {
+					containsIgnoreCase: assignee,
+				},
+			})),
 		},
 	};
 };
@@ -186,36 +180,38 @@ export async function getIssues(
 
 	searchParams: {
 		issueStates: (IssueStatus | string)[];
-		assignee?: string;
+		assignees: string[];
+		creators: string[];
+		projects: string[];
+		teams: string[];
+		labels: string[];
+
 		cycle?: CycleState;
-		creator?: string;
-		project?: string;
 		freeformSearch?: string;
-		team: string[];
-		label: string[];
 	},
 ): Promise<LnrIssue[]> {
 	const {
 		issueStates,
-		assignee,
-		creator,
+		assignees,
+		creators,
 		cycle,
-		project,
+		projects,
 		freeformSearch,
-		team,
-		label,
+		teams,
+		labels,
 	} = searchParams;
 
 	const { stateFilter, nameFilter } = getIssueStatusFilter(issueStates);
-	const assigneeFilter = assignee ? getAssigneeFilter(assignee) : {};
 
-	const teamFilter = team.length > 0 ? getTeamFilter(team) : {};
-	const labelFilter = label.length > 0 ? getLabelFilter(label) : {};
+	const assigneeFilter =
+		assignees.length > 0 ? getAssigneeFilter(assignees) : {};
+	const teamFilter = teams.length > 0 ? getTeamFilter(teams) : {};
+	const labelFilter = labels.length > 0 ? getLabelFilter(labels) : {};
+	const creatorFilter = creators.length > 0 ? getCreatorFilter(creators) : {};
+	const projectFilter = projects.length > 0 ? getProjectFilter(projects) : {};
 
 	const cycleFilter = cycle ? getCycleFilter(cycle) : {};
 	const contentFilter = freeformSearch ? getContentFilter(freeformSearch) : {};
-	const creatorFilter = creator ? getCreatorFilter(creator) : {};
-	const projectFilter = project ? getProjectFilter(project) : {};
 
 	const query: LinearDocument.IssueFilter = {
 		...stateFilter,

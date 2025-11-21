@@ -38,22 +38,22 @@ const list = command({
 			description: "Cycle filters (current, previous, next)",
 		}),
 
-		creator: option({
-			type: optional(string),
+		creator: multioption({
+			type: array(string),
 			long: "creator",
 			short: "cr",
 			description: "Creator name",
 		}),
 
-		assignee: option({
-			type: optional(string),
+		assignee: multioption({
+			type: array(string),
 			long: "assignee",
 			short: "a",
 			description: "Assignee name",
 		}),
 
-		project: option({
-			type: optional(string),
+		project: multioption({
+			type: array(string),
 			long: "project",
 			short: "p",
 			description: "Project name",
@@ -108,12 +108,12 @@ const list = command({
 			{
 				issueStates: status,
 				freeformSearch: query,
-				assignee,
-				team,
+				assignees: assignee,
+				teams: team,
 				cycle,
-				project,
-				creator,
-				label,
+				projects: project,
+				creators: creator,
+				labels: label,
 			},
 		);
 
