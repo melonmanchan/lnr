@@ -38,23 +38,22 @@ const list = command({
 			description: "Cycle filters (current, previous, next)",
 		}),
 
-		creator: option({
-			type: optional(string),
+		creator: multioption({
+			type: array(string),
 			long: "creator",
 			short: "cr",
 			description: "Creator name",
 		}),
 
-		assignee: option({
-			type: string,
+		assignee: multioption({
+			type: array(string),
 			long: "assignee",
 			short: "a",
-			defaultValue: () => "@me",
 			description: "Assignee name",
 		}),
 
-		project: option({
-			type: optional(string),
+		project: multioption({
+			type: array(string),
 			long: "project",
 			short: "p",
 			description: "Project name",
@@ -67,11 +66,18 @@ const list = command({
 			description: "Freeform text search",
 		}),
 
-		label: option({
-			type: optional(string),
+		label: multioption({
+			type: array(string),
 			long: "label",
 			short: "l",
-			description: "Issue label",
+			description: "Issue label(s)",
+		}),
+
+		team: multioption({
+			type: array(string),
+			long: "team",
+			short: "t",
+			description: "Issue team",
 		}),
 
 		format: option({
@@ -90,6 +96,7 @@ const list = command({
 		query,
 		creator,
 		label,
+		team,
 		format,
 	}) => {
 		const config = await getConfig();
@@ -101,11 +108,12 @@ const list = command({
 			{
 				issueStates: status,
 				freeformSearch: query,
-				assignee,
+				assignees: assignee,
+				teams: team,
 				cycle,
-				project,
-				creator,
-				label,
+				projects: project,
+				creators: creator,
+				labels: label,
 			},
 		);
 

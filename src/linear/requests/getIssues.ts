@@ -102,13 +102,75 @@ const getIssueStatusFilter = (issueStates: (IssueStatus | string)[]) => {
 };
 
 const getLabelFilter = (
-	label: string,
+	labels: string[],
 ): { labels: LinearDocument.IssueLabelCollectionFilter } => {
 	return {
 		labels: {
 			some: {
-				name: { containsIgnoreCase: label },
+				or: labels.map((label) => ({
+					name: { containsIgnoreCase: label },
+				})),
 			},
+		},
+	};
+};
+
+const getContentFilter = (
+	query: string,
+): { searchableContent: LinearDocument.ContentComparator } => {
+	return {
+		searchableContent: {
+			contains: query,
+		},
+	};
+};
+
+const getCreatorFilter = (
+	creators: string[],
+): { creator: LinearDocument.UserFilter } => {
+	return {
+		creator: {
+			or: creators.map((creator) => ({
+				displayName: {
+					containsIgnoreCase: creator,
+				},
+			})),
+		},
+	};
+};
+
+const getProjectFilter = (
+	projects: string[],
+): { project: LinearDocument.ProjectFilter } => {
+	return {
+		project: {
+			or: projects.map((p) => ({
+				name: { containsIgnoreCase: p },
+			})),
+		},
+	};
+};
+
+const getTeamFilter = (team: string[]): { team: LinearDocument.TeamFilter } => {
+	return {
+		team: {
+			or: team.map((t) => ({
+				name: { containsIgnoreCase: t },
+			})),
+		},
+	};
+};
+
+const getAssigneeFilter = (
+	assignees: string[],
+): { assignee: LinearDocument.UserFilter } => {
+	return {
+		assignee: {
+			or: assignees.map((assignee) => ({
+				displayName: {
+					containsIgnoreCase: assignee,
+				},
+			})),
 		},
 	};
 };
@@ -118,55 +180,38 @@ export async function getIssues(
 
 	searchParams: {
 		issueStates: (IssueStatus | string)[];
-		assignee?: string;
+		assignees: string[];
+		creators: string[];
+		projects: string[];
+		teams: string[];
+		labels: string[];
+
 		cycle?: CycleState;
-		creator?: string;
-		project?: string;
 		freeformSearch?: string;
-		label?: string;
 	},
 ): Promise<LnrIssue[]> {
 	const {
 		issueStates,
-		assignee,
-		creator,
+		assignees,
+		creators,
 		cycle,
-		project,
+		projects,
 		freeformSearch,
-		label,
+		teams,
+		labels,
 	} = searchParams;
 
 	const { stateFilter, nameFilter } = getIssueStatusFilter(issueStates);
 
-	// TODO: This is really messy
 	const assigneeFilter =
-		assignee === "@me"
-			? project || freeformSearch || assignee === undefined
-				? {}
-				: { assignee: { isMe: { eq: true } } }
-			: { assignee: { displayName: { containsIgnoreCase: assignee } } };
-
-	const creatorFilter = creator
-		? {
-				creator: {
-					displayName: {
-						containsIgnoreCase: creator,
-					},
-				},
-			}
-		: {};
-
-	const labelFilter = label ? getLabelFilter(label) : {};
+		assignees.length > 0 ? getAssigneeFilter(assignees) : {};
+	const teamFilter = teams.length > 0 ? getTeamFilter(teams) : {};
+	const labelFilter = labels.length > 0 ? getLabelFilter(labels) : {};
+	const creatorFilter = creators.length > 0 ? getCreatorFilter(creators) : {};
+	const projectFilter = projects.length > 0 ? getProjectFilter(projects) : {};
 
 	const cycleFilter = cycle ? getCycleFilter(cycle) : {};
-
-	const contentFilter = freeformSearch
-		? {
-				searchableContent: {
-					contains: freeformSearch,
-				},
-			}
-		: {};
+	const contentFilter = freeformSearch ? getContentFilter(freeformSearch) : {};
 
 	const query: LinearDocument.IssueFilter = {
 		...stateFilter,
@@ -176,7 +221,8 @@ export async function getIssues(
 		...contentFilter,
 		...creatorFilter,
 		...labelFilter,
-		...(project ? { project: { name: { containsIgnoreCase: project } } } : {}),
+		...projectFilter,
+		...teamFilter,
 	};
 
 	const resp = await paginate<LnrIssue, { filter: LinearDocument.IssueFilter }>(
