@@ -1,9 +1,9 @@
 import { subcommands } from "cmd-ts";
 import create from "./create.ts";
 import edit from "./edit.ts";
+import editMany from "./editMany.ts";
 import list from "./list.ts";
 import view from "./view.ts";
-import editMany from "./editMany.ts";
 
 export const issue = subcommands({
 	name: "issue",

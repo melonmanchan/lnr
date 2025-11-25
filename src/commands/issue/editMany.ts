@@ -1,27 +1,27 @@
+import type { LinearDocument } from "@linear/sdk";
 import {
 	array,
+	boolean,
 	command,
 	flag,
 	multioption,
 	oneOf,
 	option,
-	boolean,
 	optional,
 	string,
 } from "cmd-ts";
 import enquirer from "enquirer";
 import { getConfig } from "../../config/config.ts";
-import type { LinearDocument } from "@linear/sdk";
 import { printOutput } from "../../console/print.ts";
 import { getLinearClient } from "../../linear/client.ts";
 import { formatIssueForOutput } from "../../linear/formatters.ts";
-import { getIssues } from "../../linear/requests/getIssues.ts";
-import { cycleStates, type IssueStatus, issueStatuses } from "../../types.ts";
 import { batchUpdateIssue } from "../../linear/requests/batchUpdateIssue.ts";
 import { getIssueLabels } from "../../linear/requests/getIssueLabels.ts";
+import { getIssues } from "../../linear/requests/getIssues.ts";
+import { cycleStates, type IssueStatus, issueStatuses } from "../../types.ts";
 
 const editMany = command({
-	// TODO: Unity these to be the same as issue list
+	// TODO: Unify these to be the same as issue list
 	name: "edit-many",
 	args: {
 		status: multioption({
@@ -94,7 +94,6 @@ const editMany = command({
 
 		confirm: flag({
 			type: boolean,
-			short: "c",
 			long: "confirm",
 			description: "Auto-confirm you want to edit issues",
 		}),
@@ -173,7 +172,7 @@ const editMany = command({
 
 		const issueIds = issues.map((i) => i.id);
 
-		let input: LinearDocument.IssueUpdateInput = {};
+		const input: LinearDocument.IssueUpdateInput = {};
 
 		if (labelToAdd) {
 			const labels = await getIssueLabels(client, {
