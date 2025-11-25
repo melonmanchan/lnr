@@ -18,6 +18,7 @@ import { formatIssueForOutput } from "../../linear/formatters.ts";
 import { getIssues } from "../../linear/requests/getIssues.ts";
 import { cycleStates, type IssueStatus, issueStatuses } from "../../types.ts";
 import { batchUpdateIssue } from "../../linear/requests/batchUpdateIssue.ts";
+import { getIssueLabels } from "../../linear/requests/getIssueLabels.ts";
 
 const editMany = command({
 	// TODO: Unity these to be the same as issue list
@@ -175,15 +176,20 @@ const editMany = command({
 		let input: LinearDocument.IssueUpdateInput = {};
 
 		if (labelToAdd) {
-			const labels = await client.issueLabels({
-				filter: {
-					name: {
-						containsIgnoreCase: labelToAdd,
-					},
+			const labels = await getIssueLabels(client, {
+				name: {
+					containsIgnoreCase: labelToAdd,
 				},
 			});
 
-			const labelIds = labels.nodes.map((l) => l.id);
+			const labelIds = labels.map((l) => l.id);
+
+			if (labelIds.length === 0) {
+				console.warn("No labels to add found ");
+				process.exit(-1);
+			}
+
+			console.log(labelIds);
 
 			input.addedLabelIds = labelIds;
 		}
