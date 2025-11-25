@@ -26,7 +26,7 @@ export async function batchUpdateIssue(
 	{ client }: LinearClient,
 	updateData: BatchUpdateIssueData,
 ): Promise<boolean> {
-	const { ids, ...input } = updateData;
+	const { ids, input } = updateData;
 
 	const resp = await client.request(batchUpdateIssueMutation, {
 		ids,

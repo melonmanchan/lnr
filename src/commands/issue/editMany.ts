@@ -189,8 +189,6 @@ const editMany = command({
 				process.exit(-1);
 			}
 
-			console.log(labelIds);
-
 			input.addedLabelIds = labelIds;
 		}
 
