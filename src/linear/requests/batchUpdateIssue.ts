@@ -22,7 +22,7 @@ export type BatchUpdateIssueData = {
 	input: LinearDocument.IssueUpdateInput;
 };
 
-export async function updateIssue(
+export async function batchUpdateIssue(
 	{ client }: LinearClient,
 	updateData: BatchUpdateIssueData,
 ): Promise<boolean> {
