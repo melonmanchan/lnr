@@ -6,7 +6,7 @@ import { getLinearClient } from "../../linear/client.ts";
 
 const view = command({
 	name: "view",
-	description: "View an invidivual issue",
+	description: "View an individual issue",
 	args: {
 		issue: positional({
 			type: string,

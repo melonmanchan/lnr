@@ -4,7 +4,6 @@
     "jsr:@std/assert@^1.0.15": "1.0.15",
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "npm:@biomejs/biome@^2.3.3": "2.3.3",
-    "npm:@linear/sdk@64": "64.0.0_graphql@15.10.1",
     "npm:@types/node@^24.10.0": "24.10.0",
     "npm:chalk@^5.6.2": "5.6.2",
     "npm:cli-table3@~0.6.5": "0.6.5",
@@ -299,7 +298,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@biomejs/biome@^2.3.3",
-        "npm:@linear/sdk@64",
+        "npm:@linear/sdk@65",
         "npm:@types/node@^24.10.0",
         "npm:chalk@^5.6.2",
         "npm:cli-table3@~0.6.5",
