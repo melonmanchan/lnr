@@ -208,7 +208,7 @@ const editMany = command({
 				process.exit(-1);
 			}
 
-			if (userIds.length >= 1) {
+			if (userIds.length > 1) {
 				console.warn(
 					"Multiple users to assign found, please narrow down your filter",
 				);
