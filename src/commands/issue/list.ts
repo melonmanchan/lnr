@@ -17,10 +17,10 @@ export default new Command()
 	.option(
 		"-s, --status <status:string[]>",
 		"Filter by issue status (completed, canceled, backlog, triage, unstarted, started). Default is everything except completed or cancelled",
-		{ collect: true, default: [] },
+		{ default: [] },
 	)
 	.option(
-		"-c, --cycle <cycle:issueStatus>",
+		"-c, --cycle <cycle:string>",
 		"Cycle filters (current, previous, next)",
 		{
 			value: (value: unknown) => {
@@ -38,25 +38,25 @@ export default new Command()
 		},
 	)
 	.option("-cr, --creator <creator:string>", "Creator name", {
-		collect: true,
 		default: [],
+		collect: true,
 	})
 	.option("-a, --assignee <assignee:string>", "Assignee name", {
-		collect: true,
 		default: [],
+		collect: true,
 	})
 	.option("-p, --project <project:string>", "Project name", {
-		collect: true,
 		default: [],
+		collect: true,
 	})
 	.option("-q, --query <query:string>", "Freeform text search")
 	.option("-l, --label <label:string>", "Issue label(s)", {
-		collect: true,
 		default: [],
+		collect: true,
 	})
 	.option("-t, --team <team:string>", "Issue team", {
-		collect: true,
 		default: [],
+		collect: true,
 	})
 	.option("--format <format:outputFormat>", "Output format (table or json)", {
 		default: "table",
@@ -88,14 +88,14 @@ export default new Command()
 				client,
 
 				{
-					issueStates: status,
+					issueStates: status as string[],
 					freeformSearch: query,
-					assignees: assignee,
-					teams: team,
+					assignees: assignee as string[],
+					teams: team as string[],
 					cycle,
-					projects: project,
-					creators: creator,
-					labels: label,
+					projects: project as string[],
+					creators: creator as string[],
+					labels: label as string[],
 				},
 			);
 

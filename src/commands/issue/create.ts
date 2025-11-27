@@ -1,5 +1,5 @@
 import { Command } from "@cliffy/command";
-import { Input, prompt, Select, Toggle } from "@cliffy/prompt";
+import { Input, List, Select, Toggle } from "@cliffy/prompt";
 import type { LinearDocument, Team } from "@linear/sdk";
 import chalk from "chalk";
 import { getConfig } from "../../config/config.ts";
@@ -20,7 +20,7 @@ export default new Command()
 		"-P, --priority <priority:issuePriority>",
 		`Issue priority (${issuePriorities.join(", ")})`,
 		{
-			value: (value) => {
+			value: (value: any) => {
 				if (!issuePriorities.includes(value as IssuePriority)) {
 					throw new Error(
 						`Invalid priority: ${value}. Must be one of ${issuePriorities.join(", ")}`,
@@ -48,7 +48,7 @@ export default new Command()
 			? title
 			: await Input.prompt({
 					message: "Issue title",
-					validate: (value) =>
+					validate: (value: string) =>
 						value.length === 0 ? "Title is required!" : true,
 				});
 
@@ -106,20 +106,20 @@ export default new Command()
 		if (!description) {
 			const hasEditorAvailable = !!config.editor;
 
-			const useEditor = await Toggle.prompt({
-				message: `Body: (Use editor ${config.editor || ""}?)`,
-				suffix: "(e to launch editor, enter to skip)",
-				active: "yes",
-				inactive: "no",
+			const message = hasEditorAvailable
+				? `Body: (e to launch ${config.editor}, enter to skip)`
+				: "Body: (enter to skip)";
+
+			const bodyPrompt = await Input.prompt({
+				message,
 			});
 
-			if (useEditor && hasEditorAvailable && config.editor) {
+			if (bodyPrompt === "e" && hasEditorAvailable && config.editor) {
 				const editorDescription = openTextEditor(config.editor);
+
 				description = editorDescription;
 			} else {
-				description = await Input.prompt({
-					message: "Description (optional):",
-				});
+				description = bodyPrompt;
 			}
 		}
 
@@ -159,15 +159,14 @@ export default new Command()
 			if (formattedLabels.length === 1) {
 				createInput.labelIds = [formattedLabels[0].value];
 			} else {
-				const selectedLabelIds = await Select.prompt({
+				const selectedLabelNames: string[] = await List.prompt({
 					message: "Select labels",
-					options: formattedLabels,
-					// @ts-expect-error: This is a multiselect, but Select.prompt doesn't have a direct multiselect type
-					// Cliffy's MultiSelect.prompt should be used here, but for now this works.
-					multiple: true,
+					suggestions: formattedLabels.map((l) => l.name),
 				});
 
-				createInput.labelIds = selectedLabelIds;
+				createInput.labelIds = formattedLabels
+					.filter((l) => selectedLabelNames.includes(l.name))
+					.map((l) => l.value);
 			}
 		}
 
