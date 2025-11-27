@@ -1,12 +1,4 @@
-import {
-	boolean,
-	command,
-	flag,
-	oneOf,
-	option,
-	optional,
-	string,
-} from "cmd-ts";
+import { Command } from "@cliffy/command";
 import { getConfig } from "../../config/config.ts";
 import { printOutput } from "../../console/print.ts";
 import { getLinearClient } from "../../linear/client.ts";
@@ -14,33 +6,22 @@ import { formatProjectForOutput } from "../../linear/formatters.ts";
 import { getProjects } from "../../linear/requests/getProjects.ts";
 import { type OutputFormat, outputFormats } from "../../types.ts";
 
-const list = command({
-	name: "list",
-	description: "List projects",
-	args: {
-		all: flag({
-			type: boolean,
-			long: "all",
-			short: "a",
-			description: "List all projects?",
-		}),
-
-		query: option({
-			type: optional(string),
-			long: "query",
-			short: "q",
-			description: "Freeform text search",
-		}),
-
-		format: option({
-			type: oneOf<OutputFormat>(outputFormats),
-			long: "format",
-			description: "Output format (table or json)",
-			defaultValue: () => "table" as OutputFormat,
-		}),
-	},
-
-	handler: async ({ all, query, format }) => {
+export default new Command()
+	.description("List projects")
+	.option("-a, --all", "List all projects?", { default: false })
+	.option("-q, --query <query:string>", "Freeform text search")
+	.option("--format <format:outputFormat>", "Output format (table or json)", {
+		default: "table",
+		value: (value) => {
+			if (!outputFormats.includes(value as OutputFormat)) {
+				throw new Error(
+					`Invalid format: ${value}. Must be one of ${outputFormats.join(", ")}`,
+				);
+			}
+			return value as OutputFormat;
+		},
+	})
+	.action(async ({ all, query, format }) => {
 		const config = await getConfig();
 		const client = getLinearClient(config.linearApiKey);
 
@@ -52,11 +33,11 @@ const list = command({
 		if (!projects.length) {
 			if (format === "json") {
 				printOutput([], format);
-				process.exit(0);
+				Deno.exit(0);
 			}
 
 			console.log("No projects found");
-			process.exit(0);
+			Deno.exit(0);
 		}
 
 		const formattedProjects = projects.map((project) =>
@@ -65,8 +46,5 @@ const list = command({
 
 		printOutput(formattedProjects, format);
 
-		process.exit(0);
-	},
-});
-
-export default list;
+		Deno.exit(0);
+	});

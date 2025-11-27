@@ -1,28 +1,14 @@
-import { boolean, command, flag, positional, string } from "cmd-ts";
-
+import { Command } from "@cliffy/command";
 import open from "open";
 import { getConfig } from "../../config/config.ts";
 import { getLinearClient } from "../../linear/client.ts";
 import { getProjects } from "../../linear/requests/getProjects.ts";
 
-const view = command({
-	name: "view",
-	description: "View an invidivual project",
-	args: {
-		project: positional({
-			type: string,
-			displayName: "project",
-			description: "Project name",
-		}),
-		web: flag({
-			type: boolean,
-			long: "web",
-			short: "w",
-			description: "View project in web/native app",
-		}),
-	},
-
-	handler: async ({ project, web }) => {
+export default new Command()
+	.description("View an individual project")
+	.arguments("<project-name:string>")
+	.option("-w, --web", "View project in web/native app", { default: false })
+	.action(async (projectName, { web }) => {
 		const config = await getConfig();
 
 		const client = getLinearClient(config.linearApiKey);
@@ -32,13 +18,13 @@ const view = command({
 			me.organization,
 			getProjects(client, {
 				ownProjectsOnly: false,
-				name: project,
+				name: projectName,
 			}),
 		]);
 
 		if (projects.length === 0) {
 			console.warn("No projects found");
-			process.exit(1);
+			Deno.exit(1);
 		}
 
 		if (projects.length > 1) {
@@ -50,7 +36,7 @@ const view = command({
 
 			console.log(`Found projects: ${foundNames.join(", ")}`);
 
-			process.exit(1);
+			Deno.exit(1);
 		}
 
 		const projectToView = projects[0];
@@ -61,8 +47,5 @@ const view = command({
 
 		open(url);
 
-		process.exit(0);
-	},
-});
-
-export default view;
+		Deno.exit(0);
+	});

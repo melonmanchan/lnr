@@ -1,10 +1,9 @@
-import { subcommands } from "cmd-ts";
+import { Command } from "@cliffy/command";
 
 import list from "./list.ts";
 import view from "./view.ts";
 
-export const project = subcommands({
-	name: "project",
-	description: "Linear project-related tasks",
-	cmds: { list, view },
-});
+export const project = new Command()
+	.description("Linear project-related tasks")
+	.command("list", list)
+	.command("view", view);

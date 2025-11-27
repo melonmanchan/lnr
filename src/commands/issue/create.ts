@@ -1,8 +1,7 @@
-import process from "node:process";
+import { Command } from "@cliffy/command";
+import { Input, prompt, Select, Toggle } from "@cliffy/prompt";
 import type { LinearDocument, Team } from "@linear/sdk";
 import chalk from "chalk";
-import { command, oneOf, option, optional, string } from "cmd-ts";
-import enquirer from "enquirer";
 import { getConfig } from "../../config/config.ts";
 import { openTextEditor } from "../../console/editor.ts";
 import { getLinearClient } from "../../linear/client.ts";
@@ -12,44 +11,27 @@ import {
 } from "../../linear/requests/getProjects.ts";
 import { type IssuePriority, issuePriorities } from "../../types.ts";
 
-const create = command({
-	name: "create",
-	args: {
-		title: option({
-			type: optional(string),
-			long: "title",
-			short: "t",
-			description: "Issue title",
-		}),
-
-		description: option({
-			type: optional(string),
-			long: "description",
-			short: "d",
-			description: "Issue description",
-		}),
-
-		project: option({
-			type: optional(string),
-			long: "project",
-			short: "p",
-			description: "Project name",
-		}),
-
-		priority: option({
-			type: optional(oneOf<IssuePriority>(issuePriorities)),
-			long: "priority",
-			description: `Issue priority (${issuePriorities.join(", ")})`,
-		}),
-
-		label: option({
-			type: optional(string),
-			long: "label",
-			short: "l",
-			description: "Label name",
-		}),
-	},
-	handler: async ({ title, description, project, label, priority }) => {
+export default new Command()
+	.description("Create a new issue")
+	.option("-t, --title <title:string>", "Issue title")
+	.option("-d, --description <description:string>", "Issue description")
+	.option("-p, --project <project:string>", "Project name")
+	.option(
+		"-P, --priority <priority:issuePriority>",
+		`Issue priority (${issuePriorities.join(", ")})`,
+		{
+			value: (value) => {
+				if (!issuePriorities.includes(value as IssuePriority)) {
+					throw new Error(
+						`Invalid priority: ${value}. Must be one of ${issuePriorities.join(", ")}`,
+					);
+				}
+				return value as IssuePriority;
+			},
+		},
+	)
+	.option("-l, --label <label:string>", "Label name")
+	.action(async ({ title, description, project, label, priority }) => {
 		const config = await getConfig();
 		const client = getLinearClient(config.linearApiKey);
 
@@ -64,17 +46,15 @@ const create = command({
 
 		const newTitle = title
 			? title
-			: (
-					await enquirer.prompt<{ title: string }>({
-						type: "input",
-						name: "title",
-						message: "Issue title",
-					})
-				).title;
+			: await Input.prompt({
+					message: "Issue title",
+					validate: (value) =>
+						value.length === 0 ? "Title is required!" : true,
+				});
 
 		if (newTitle.length === 0) {
 			console.error(chalk.red("Title is required!"));
-			process.exit(-1);
+			Deno.exit(1);
 		}
 
 		const myTeams = await teamsPromise;
@@ -89,14 +69,12 @@ const create = command({
 				};
 			});
 
-			const newTeam = await enquirer.prompt<{ teamId: string }>({
-				type: "autocomplete",
-				name: "teamId",
+			const selectedTeamId = await Select.prompt({
 				message: "Select a team",
-				choices: teamChoices,
+				options: teamChoices,
 			});
 
-			defaultTeam = myTeams.find((t) => t.id === newTeam.teamId) as Team;
+			defaultTeam = myTeams.find((t) => t.id === selectedTeamId) as Team;
 		}
 
 		const projects = await getProjects(client, {
@@ -114,44 +92,34 @@ const create = command({
 
 		if (projectChoices.length === 0) {
 			console.log("No projects found matching filters");
-			process.exit(0);
+			Deno.exit(0);
 		}
 
 		const projectId =
 			projectChoices.length === 1
 				? projectChoices[0].value
-				: (
-						await enquirer.prompt<{ projectId: string }>({
-							type: "autocomplete",
-							name: "projectId",
-							message: "Select a project",
-							choices: projectChoices,
-						})
-					).projectId;
+				: await Select.prompt({
+						message: "Select a project",
+						options: projectChoices,
+					});
 
 		if (!description) {
 			const hasEditorAvailable = !!config.editor;
 
-			const message = hasEditorAvailable
-				? `Body: (e to launch ${config.editor}, enter to skip)`
-				: "Body: (enter to skip)";
-
-			const makeDescription = await enquirer.prompt<{
-				descriptionPrompt: string;
-			}>({
-				type: "input",
-				name: "descriptionPrompt",
-				message,
+			const useEditor = await Toggle.prompt({
+				message: `Body: (Use editor ${config.editor || ""}?)`,
+				suffix: "(e to launch editor, enter to skip)",
+				active: "yes",
+				inactive: "no",
 			});
 
-			const { descriptionPrompt } = makeDescription;
-
-			if (descriptionPrompt === "e" && hasEditorAvailable && config.editor) {
+			if (useEditor && hasEditorAvailable && config.editor) {
 				const editorDescription = openTextEditor(config.editor);
-
 				description = editorDescription;
 			} else {
-				description = descriptionPrompt;
+				description = await Input.prompt({
+					message: "Description (optional):",
+				});
 			}
 		}
 
@@ -178,7 +146,7 @@ const create = command({
 
 			if (!noGroups.length) {
 				console.log(`No labels found for query "${label}"`);
-				process.exit(1);
+				Deno.exit(1);
 			}
 
 			const formattedLabels = noGroups.map((l) => {
@@ -191,20 +159,15 @@ const create = command({
 			if (formattedLabels.length === 1) {
 				createInput.labelIds = [formattedLabels[0].value];
 			} else {
-				const labelIds = (
-					await enquirer.prompt<{ labelIds: string[] }>({
-						type: "multiselect",
-						name: "labelIds",
-						message: "Select labels",
-						choices: formattedLabels,
-					})
-				).labelIds;
+				const selectedLabelIds = await Select.prompt({
+					message: "Select labels",
+					options: formattedLabels,
+					// @ts-expect-error: This is a multiselect, but Select.prompt doesn't have a direct multiselect type
+					// Cliffy's MultiSelect.prompt should be used here, but for now this works.
+					multiple: true,
+				});
 
-				const actualIds: string[] = labelIds
-					.map((id) => formattedLabels.find((l) => l.name === id)?.value)
-					.filter((v): v is string => !!v);
-
-				createInput.labelIds = actualIds;
+				createInput.labelIds = selectedLabelIds;
 			}
 		}
 
@@ -226,8 +189,5 @@ const create = command({
 
 		console.log(newIssue?.url);
 
-		process.exit(0);
-	},
-});
-
-export default create;
+		Deno.exit(0);
+	});

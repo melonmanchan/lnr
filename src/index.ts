@@ -1,6 +1,5 @@
-import process from "node:process";
+import { Command } from "@cliffy/command";
 import chalk from "chalk";
-import { run, subcommands } from "cmd-ts";
 import packageJson from "../package.json" with { type: "json" };
 import { auth } from "./commands/auth.ts";
 import { issue } from "./commands/issue/index.ts";
@@ -9,21 +8,22 @@ import { configExists } from "./config/config.ts";
 
 const hasConfig = await configExists();
 
-const ARGS = process.argv.slice(2);
-
-const fullCommand = ARGS.join(" ");
-
-if (!hasConfig && fullCommand !== "auth login") {
+if (!hasConfig && Deno.args[0] !== "auth" && Deno.args[1] !== "login") {
 	console.log("No configuration found");
 	console.log(`Please run ${chalk.bold("lnr auth login")} to authenticate!`);
-	process.exit(1);
+	Deno.exit(1);
 }
 
-const app = subcommands({
-	version: packageJson.version,
-	description: "A command-line interface for Linear",
-	name: "lnr",
-	cmds: { issue, auth, project },
-});
+const app = new Command()
+	.name("lnr")
+	.version(packageJson.version)
+	.description("A command-line interface for Linear")
+	.command("auth", auth)
+	.command("issue", issue)
+	.command("project", project);
 
-run(app, ARGS);
+try {
+	await app.parse(Deno.args);
+} catch (_error) {
+	app.showHelp();
+}
