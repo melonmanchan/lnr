@@ -5,9 +5,9 @@ import { getLinearClient } from "../../linear/client.ts";
 
 export default new Command()
 	.description("View an individual issue")
-	.arguments("<issue-id:string>")
+	.arguments("<issueId:string>")
 	.option("-w, --web", "View issue in web/native app", { default: false })
-	.action(async (issueId, { web }) => {
+	.action(async ({ web }, issueId: string) => {
 		const config = await getConfig();
 		const client = getLinearClient(config.linearApiKey);
 		const me = await client.viewer;

@@ -6,10 +6,11 @@ import { getProjects } from "../../linear/requests/getProjects.ts";
 
 export default new Command()
 	.description("View an individual project")
-	.arguments("<project-name:string>")
+	.arguments("<projectName:string>")
 	.option("-w, --web", "View project in web/native app", { default: false })
-	.action(async (projectName, { web }) => {
+	.action(async ({ web }, projectName: string) => {
 		const config = await getConfig();
+		console.log(projectName);
 
 		const client = getLinearClient(config.linearApiKey);
 		const me = await client.viewer;
