@@ -22,8 +22,4 @@ const app = new Command()
 	.command("issue", issue)
 	.command("project", project);
 
-try {
-	await app.parse(Deno.args);
-} catch (_error) {
-	app.showHelp();
-}
+await app.parse(Deno.args);

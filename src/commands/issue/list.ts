@@ -17,13 +17,17 @@ export default new Command()
 	.option(
 		"-s, --status <status:string[]>",
 		"Filter by issue status (completed, canceled, backlog, triage, unstarted, started). Default is everything except completed or cancelled",
-		{ collect: true },
+		{ collect: true, default: [] },
 	)
 	.option(
 		"-c, --cycle <cycle:issueStatus>",
 		"Cycle filters (current, previous, next)",
 		{
-			value: (value) => {
+			value: (value: unknown) => {
+				if (!value) {
+					return;
+				}
+
 				if (!cycleStates.includes(value as IssueStatus)) {
 					throw new Error(
 						`Invalid cycle: ${value}. Must be one of ${cycleStates.join(", ")}`,
@@ -33,19 +37,30 @@ export default new Command()
 			},
 		},
 	)
-	.option("-cr, --creator <creator:string[]>", "Creator name", {
+	.option("-cr, --creator <creator:string>", "Creator name", {
 		collect: true,
+		default: [],
 	})
-	.option("-a, --assignee <assignee:string[]>", "Assignee name", {
+	.option("-a, --assignee <assignee:string>", "Assignee name", {
 		collect: true,
+		default: [],
 	})
-	.option("-p, --project <project:string[]>", "Project name", { collect: true })
+	.option("-p, --project <project:string>", "Project name", {
+		collect: true,
+		default: [],
+	})
 	.option("-q, --query <query:string>", "Freeform text search")
-	.option("-l, --label <label:string[]>", "Issue label(s)", { collect: true })
-	.option("-t, --team <team:string[]>", "Issue team", { collect: true })
+	.option("-l, --label <label:string>", "Issue label(s)", {
+		collect: true,
+		default: [],
+	})
+	.option("-t, --team <team:string>", "Issue team", {
+		collect: true,
+		default: [],
+	})
 	.option("--format <format:outputFormat>", "Output format (table or json)", {
 		default: "table",
-		value: (value) => {
+		value: (value: unknown) => {
 			if (!outputFormats.includes(value as OutputFormat)) {
 				throw new Error(
 					`Invalid format: ${value}. Must be one of ${outputFormats.join(", ")}`,
