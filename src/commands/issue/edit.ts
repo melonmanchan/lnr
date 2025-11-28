@@ -16,7 +16,7 @@ import {
 
 export default new Command()
 	.description("Edit an individual issue")
-	.arguments("<issue-id:string>")
+	.arguments("<issueId:string>")
 	.option("-t, --title <title:string>", "Title")
 	.option("-d, --description <description:string>", "Description")
 	.option("-a, --assignee <assignee:string>", "Assignee")
@@ -41,8 +41,8 @@ export default new Command()
 	.option("-l, --label <label:string>", "Label name")
 	.action(
 		async (
-			issueId,
 			{ title, description, assignee, priority, status, label },
+			issueId: string,
 		) => {
 			const config = await getConfig();
 			const client = getLinearClient(config.linearApiKey);
@@ -62,8 +62,8 @@ export default new Command()
 				updateData.priority = issuePriorities.indexOf(priority);
 			}
 
-			let cachedIssue: Issue | null = null;
-			let cachedTeam: Team | null = null;
+			let cachedIssue: Issue | undefined;
+			let cachedTeam: Team | undefined;
 
 			const getIssue = async () => {
 				if (!cachedIssue) {
@@ -73,7 +73,7 @@ export default new Command()
 				return cachedIssue;
 			};
 
-			const getTeam = async () => {
+			const getTeam = async (): Promise<Team> => {
 				if (!cachedTeam) {
 					const apiIssue = await getIssue();
 					const team = await apiIssue.team;
@@ -86,7 +86,7 @@ export default new Command()
 					cachedTeam = team;
 				}
 
-				return cachedTeam;
+				return cachedTeam as Team;
 			};
 
 			if (assignee) {
