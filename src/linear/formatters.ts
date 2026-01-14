@@ -2,6 +2,7 @@ import chalk from "chalk";
 import type { OutputFormat } from "../types.ts";
 import truncate from "../utils/truncate.ts";
 import type { LnrIssue } from "./requests/getIssues.ts";
+import type { LnrProjectMilestone } from "./requests/getProjectMilestones.ts";
 import type { LnrProject } from "./requests/getProjects.ts";
 
 export function formatIssueForOutput(
@@ -56,5 +57,28 @@ export function formatProjectForOutput(
 		Name: project.name,
 		Status: project.status.name,
 		Url: project.url,
+	};
+}
+
+export function formatMilestoneForOutput(
+	milestone: LnrProjectMilestone,
+	format: OutputFormat,
+): Record<string, unknown> {
+	if (format === "json") {
+		return {
+			id: milestone.id,
+			name: milestone.name,
+			targetDate: milestone.targetDate ?? null,
+			sortOrder: milestone.sortOrder,
+			description: milestone.description ?? null,
+		};
+	}
+
+	return {
+		Name: milestone.name,
+		"Target Date": milestone.targetDate ?? "-",
+		Description: milestone.description
+			? truncate(milestone.description, 40)
+			: "-",
 	};
 }
