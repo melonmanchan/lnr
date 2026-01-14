@@ -206,8 +206,6 @@ const edit = command({
 							})
 						).milestoneId;
 
-			console.log(newMilestoneId);
-
 			updateData.projectMilestoneId = newMilestoneId;
 		}
 
