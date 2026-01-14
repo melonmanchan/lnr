@@ -19,6 +19,11 @@ const getIssuesQuery = `query GetIssues($filter: IssueFilter!, $after: String) {
         type
         color
       }
+      projectMilestone {
+      	targetDate
+      	id
+      	name
+      }
       assignee {
         name
         displayName
@@ -50,6 +55,15 @@ const LnrIssue = z.object({
 		name: z.string(),
 		id: z.string(),
 	}),
+
+	projectMilestone: z
+		.object({
+			name: z.string(),
+			id: z.string(),
+			// TODO: better typing?
+			targetDate: z.string().nullish(),
+		})
+		.nullish(),
 	assignee: z.union([
 		z.null(),
 		z.object({ name: z.string(), displayName: z.string() }),

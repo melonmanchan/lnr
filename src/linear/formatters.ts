@@ -17,6 +17,8 @@ export function formatIssueForOutput(
 			statusType: issue.state?.type ?? null,
 			assignee: issue.assignee?.displayName ?? null,
 			creator: issue.creator?.displayName ?? null,
+			milestone: issue.projectMilestone?.name ?? null,
+			target: issue.projectMilestone?.targetDate ?? null,
 		};
 	}
 
@@ -31,6 +33,8 @@ export function formatIssueForOutput(
 		Status: statusName ? stateColorFn(statusName) : "",
 		Assignee: issue.assignee?.displayName,
 		Creator: issue.creator?.displayName,
+		Milestone: issue.projectMilestone?.name ?? null,
+		"Target date": issue.projectMilestone?.targetDate ?? null,
 	};
 }
 
