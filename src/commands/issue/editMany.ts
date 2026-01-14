@@ -51,6 +51,12 @@ const editMany = command({
 			short: "a",
 			description: "Assignee name",
 		}),
+		milestone: option({
+			type: optional(string),
+			long: "milestone",
+			short: "m",
+			description: "Project milestone",
+		}),
 
 		project: multioption({
 			type: array(string),
@@ -114,6 +120,8 @@ const editMany = command({
 		creator,
 		label,
 		team,
+		milestone,
+
 		confirm,
 
 		milestoneToAdd,
@@ -132,6 +140,7 @@ const editMany = command({
 				assignees: assignee,
 				teams: team,
 				cycle,
+				milestone,
 				projects: project,
 				creators: creator,
 				labels: label,

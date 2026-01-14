@@ -147,6 +147,16 @@ const getCreatorFilter = (
 	};
 };
 
+const getMilestoneFilter = (
+	milestone: string,
+): { projectMilestone: LinearDocument.ProjectMilestoneFilter } => {
+	return {
+		projectMilestone: {
+			name: { containsIgnoreCase: milestone },
+		},
+	};
+};
+
 const getProjectFilter = (
 	projects: string[],
 ): { project: LinearDocument.ProjectFilter } => {
@@ -195,6 +205,7 @@ export async function getIssues(
 		labels: string[];
 
 		cycle?: CycleState;
+		milestone?: string;
 		freeformSearch?: string;
 	},
 ): Promise<LnrIssue[]> {
@@ -207,6 +218,7 @@ export async function getIssues(
 		freeformSearch,
 		teams,
 		labels,
+		milestone,
 	} = searchParams;
 
 	const { stateFilter, nameFilter } = getIssueStatusFilter(issueStates);
@@ -220,6 +232,7 @@ export async function getIssues(
 
 	const cycleFilter = cycle ? getCycleFilter(cycle) : {};
 	const contentFilter = freeformSearch ? getContentFilter(freeformSearch) : {};
+	const milestoneFilter = milestone ? getMilestoneFilter(milestone) : {};
 
 	const query: LinearDocument.IssueFilter = {
 		...stateFilter,
@@ -231,6 +244,7 @@ export async function getIssues(
 		...labelFilter,
 		...projectFilter,
 		...teamFilter,
+		...milestoneFilter,
 	};
 
 	const resp = await paginate<LnrIssue, { filter: LinearDocument.IssueFilter }>(
