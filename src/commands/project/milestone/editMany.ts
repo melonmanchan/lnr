@@ -24,9 +24,10 @@ const editMany = command({
 	name: "edit-many",
 	description: "Edit multiple project milestone dates",
 	args: {
-		project: positional({
+		project: option({
 			type: string,
-			displayName: "project",
+			long: "project",
+			short: "p",
 			description: "Project name",
 		}),
 

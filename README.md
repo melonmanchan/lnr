@@ -58,15 +58,15 @@ lnr project milestone list "Q1 2025 Release"
 
 ```sh
 # Edit a specific milestone date
-lnr project milestone edit "Q1 2025 Release" "Design Complete" --date 2025-02-15
+lnr project milestone edit --project "Q1 2025 Release"  --milestone "Design Complete" --date 2025-02-15
 ```
 
 ```sh
 # Edit all milestone dates for a project
-lnr project milestone edit-many "Q1 2025 Release" --date 2025-03-01
+lnr project milestone edit-many --project "Q1 2025 Release" --date 2025-03-01
 ```
 
 ```sh
-# Edit milestones matching a filter
-lnr project milestone edit-many "Q1 2025 Release" --milestone "Sprint" --date 2025-03-01
+# Edit all milestones matching a filter
+lnr project milestone edit-many --project "Q1 2025 Release" --milestone "Sprint" --date 2025-03-01
 ```

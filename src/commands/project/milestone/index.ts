@@ -7,7 +7,7 @@ import list from "./list.ts";
 export const milestone = subcommands({
 	name: "milestone",
 	description: "Project milestone management",
-	cmds: { list, edit, editMany },
+	cmds: { list, edit, "edit-many": editMany },
 });
 
 export default milestone;

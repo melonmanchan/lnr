@@ -1,6 +1,6 @@
 import process from "node:process";
 import chalk from "chalk";
-import { command, option, optional, positional, string } from "cmd-ts";
+import { command, option, optional, string } from "cmd-ts";
 import enquirer from "enquirer";
 import { getConfig } from "../../../config/config.ts";
 import { getLinearClient } from "../../../linear/client.ts";
@@ -15,15 +15,17 @@ const edit = command({
 	name: "edit",
 	description: "Edit a project milestone",
 	args: {
-		project: positional({
+		project: option({
 			type: string,
-			displayName: "project",
+			long: "project",
+			short: "p",
 			description: "Project name",
 		}),
 
-		milestone: positional({
+		milestone: option({
 			type: string,
-			displayName: "milestone",
+			long: "milestone",
+			short: "m",
 			description: "Milestone name",
 		}),
 
@@ -132,6 +134,7 @@ const edit = command({
 		const updated = await updateProjectMilestone(client, updateData);
 
 		console.log(`Milestone ${chalk.bold(updated.name)} updated`);
+
 		if (updated.targetDate) {
 			console.log(`Target date: ${updated.targetDate}`);
 		}
