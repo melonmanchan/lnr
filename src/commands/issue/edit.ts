@@ -38,6 +38,13 @@ const edit = command({
 			description: "Description",
 		}),
 
+		milestone: option({
+			type: optional(string),
+			long: "milestone",
+			short: "m",
+			description: "Project milestone to add issue to",
+		}),
+
 		assignee: option({
 			type: optional(string),
 			long: "assignee",
@@ -72,6 +79,7 @@ const edit = command({
 		title,
 		description,
 		assignee,
+		milestone,
 		priority,
 		status,
 		label,
@@ -90,6 +98,7 @@ const edit = command({
 		if (description) {
 			updateData.description = description;
 		}
+
 		if (priority) {
 			updateData.priority = issuePriorities.indexOf(priority);
 		}
@@ -154,6 +163,50 @@ const edit = command({
 			} else {
 				updateData.assigneeId = assignees.nodes[0].id;
 			}
+		}
+
+		if (milestone) {
+			const apiIssue = await getIssue();
+			const project = await apiIssue.project;
+			const projectMilestones = await project?.projectMilestones();
+
+			if (!projectMilestones) {
+				console.warn(`No milestones found in projects ${project?.name}`);
+				process.exit(1);
+			}
+
+			const filteredByMilestone = projectMilestones.nodes.filter((p) =>
+				p.name.toLowerCase().includes(milestone.toLowerCase()),
+			);
+
+			if (filteredByMilestone.length === 0) {
+				console.warn(
+					`Could not find milestones containing name ${milestone} in project`,
+				);
+
+				process.exit(1);
+			}
+
+			const milestoneChoices = filteredByMilestone.map((p) => {
+				return {
+					name: `${p.name}`,
+					value: p.id,
+				};
+			});
+
+			const newMilestoneId =
+				milestoneChoices.length === 1
+					? milestoneChoices[0].value
+					: (
+							await enquirer.prompt<{ milestoneId: string }>({
+								type: "autocomplete",
+								name: "milestoneId",
+								message: "Narrow down milestone",
+								choices: milestoneChoices,
+							})
+						).milestoneId;
+
+			updateData.projectMilestoneId = newMilestoneId;
 		}
 
 		if (status) {

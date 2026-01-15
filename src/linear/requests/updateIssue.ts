@@ -32,6 +32,7 @@ export type UpdateIssueData = {
 	description?: string;
 	priority?: number;
 	labelIds?: string[];
+	projectMilestoneId?: string;
 };
 
 export async function updateIssue(

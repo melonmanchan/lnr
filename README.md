@@ -50,3 +50,23 @@ lnr issue edit TT-123 --status started --assignee mikko.mallikas
 # Open an issue in the linear web app
 lnr issue view TT-123 --web
 ```
+
+```sh
+# List all milestones for a project
+lnr project milestone list "Q1 2025 Release"
+```
+
+```sh
+# Edit a specific milestone date
+lnr project milestone edit --project "Q1 2025 Release"  --milestone "Design Complete" --date 2025-02-15
+```
+
+```sh
+# Edit all milestone dates for a project
+lnr project milestone edit-many --project "Q1 2025 Release" --date 2025-03-01
+```
+
+```sh
+# Edit all milestones matching a filter
+lnr project milestone edit-many --project "Q1 2025 Release" --milestone "Sprint" --date 2025-03-01
+```

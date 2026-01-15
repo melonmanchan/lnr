@@ -51,6 +51,12 @@ const editMany = command({
 			short: "a",
 			description: "Assignee name",
 		}),
+		milestone: option({
+			type: optional(string),
+			long: "milestone",
+			short: "m",
+			description: "Project milestone",
+		}),
 
 		project: multioption({
 			type: array(string),
@@ -78,6 +84,12 @@ const editMany = command({
 			long: "team",
 			short: "t",
 			description: "Issue team",
+		}),
+
+		milestoneToAdd: option({
+			type: optional(string),
+			long: "add-milestone",
+			description: "Project milestone to add all issues to",
 		}),
 
 		assigneeToAdd: option({
@@ -108,8 +120,11 @@ const editMany = command({
 		creator,
 		label,
 		team,
+		milestone,
+
 		confirm,
 
+		milestoneToAdd,
 		labelToAdd,
 		assigneeToAdd,
 	}) => {
@@ -125,6 +140,7 @@ const editMany = command({
 				assignees: assignee,
 				teams: team,
 				cycle,
+				milestone,
 				projects: project,
 				creators: creator,
 				labels: label,
@@ -221,6 +237,64 @@ const editMany = command({
 			}
 
 			input.assigneeId = userIds[0];
+		}
+
+		if (milestoneToAdd) {
+			// Check that all the issues belong to the same project
+			const uniqueProjects = new Set(
+				issues.map((i) => i.project?.id).filter((id): id is string => !!id),
+			);
+
+			if (uniqueProjects.size > 1) {
+				console.warn(
+					"Cannot batch add a milestone when issues belong to multiple projects",
+				);
+
+				process.exit(-1);
+			}
+
+			const projectId = [...uniqueProjects][0];
+
+			const project = await client.project(projectId);
+			const projectMilestones = await project.projectMilestones();
+
+			if (!projectMilestones) {
+				console.warn(`No milestones found in projects ${project?.name}`);
+				process.exit(1);
+			}
+
+			const filteredByMilestone = projectMilestones.nodes.filter((p) =>
+				p.name.toLowerCase().includes(milestoneToAdd.toLowerCase()),
+			);
+
+			if (filteredByMilestone.length === 0) {
+				console.warn(
+					`Could not find milestones containing name ${milestoneToAdd} in project`,
+				);
+
+				process.exit(1);
+			}
+
+			const milestoneChoices = filteredByMilestone.map((p) => {
+				return {
+					name: `${p.name}`,
+					value: p.id,
+				};
+			});
+
+			const newMilestoneId =
+				milestoneChoices.length === 1
+					? milestoneChoices[0].value
+					: (
+							await enquirer.prompt<{ milestoneId: string }>({
+								type: "autocomplete",
+								name: "milestoneId",
+								message: "Narrow down milestone",
+								choices: milestoneChoices,
+							})
+						).milestoneId;
+
+			input.projectMilestoneId = newMilestoneId;
 		}
 
 		console.log("Updating issues...");

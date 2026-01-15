@@ -66,6 +66,13 @@ const list = command({
 			description: "Freeform text search",
 		}),
 
+		milestone: option({
+			type: optional(string),
+			long: "milestone",
+			short: "m",
+			description: "Project milestone",
+		}),
+
 		label: multioption({
 			type: array(string),
 			long: "label",
@@ -96,6 +103,7 @@ const list = command({
 		query,
 		creator,
 		label,
+		milestone,
 		team,
 		format,
 	}) => {
@@ -111,6 +119,7 @@ const list = command({
 				assignees: assignee,
 				teams: team,
 				cycle,
+				milestone,
 				projects: project,
 				creators: creator,
 				labels: label,
