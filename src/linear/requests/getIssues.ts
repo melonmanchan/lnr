@@ -51,10 +51,12 @@ const LnrIssue = z.object({
 	identifier: z.string(),
 	title: z.string(),
 	state: z.object({ name: z.string(), type: z.string(), color: z.string() }),
-	project: z.object({
-		name: z.string(),
-		id: z.string(),
-	}),
+	project: z
+		.object({
+			name: z.string(),
+			id: z.string(),
+		})
+		.nullish(),
 
 	projectMilestone: z
 		.object({
