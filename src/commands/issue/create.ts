@@ -36,6 +36,12 @@ const create = command({
 			description: "Project name",
 		}),
 
+		team: option({
+			type: optional(string),
+			long: "team",
+			description: "Team name or ID",
+		}),
+
 		priority: option({
 			type: optional(oneOf<IssuePriority>(issuePriorities)),
 			long: "priority",
@@ -49,11 +55,25 @@ const create = command({
 			description: "Label name",
 		}),
 	},
-	handler: async ({ title, description, project, label, priority }) => {
+	handler: async ({ title, description, project, team, label, priority }) => {
 		const config = await getConfig();
 		const client = getLinearClient(config.linearApiKey);
 
 		async function fetchTeams(): Promise<Team[]> {
+			if (team) {
+				console.log(team);
+				const allTeams = await client.teams({
+					filter: {
+						name: {
+							containsIgnoreCase: team,
+						},
+					},
+				});
+
+				return allTeams.nodes;
+			}
+
+			// Otherwise, fetch user's teams
 			const me = await client.viewer;
 			const myTeams = await me.teams();
 
@@ -77,12 +97,17 @@ const create = command({
 			process.exit(-1);
 		}
 
-		const myTeams = await teamsPromise;
+		const matchingTeams = await teamsPromise;
 
-		let defaultTeam = myTeams[0];
+		if (matchingTeams.length === 0) {
+			console.error(chalk.red(`No teams found matching "${team}"`));
+			process.exit(-1);
+		}
 
-		if (myTeams.length > 1) {
-			const teamChoices = myTeams.map((t: Team) => {
+		let defaultTeam = matchingTeams[0];
+
+		if (matchingTeams.length > 1) {
+			const teamChoices = matchingTeams.map((t: Team) => {
 				return {
 					name: `${t.name}`,
 					value: t.id,
@@ -96,7 +121,7 @@ const create = command({
 				choices: teamChoices,
 			});
 
-			defaultTeam = myTeams.find((t) => t.id === newTeam.teamId) as Team;
+			defaultTeam = matchingTeams.find((t) => t.id === newTeam.teamId) as Team;
 		}
 
 		const projects = await getProjects(client, {
