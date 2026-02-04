@@ -6,11 +6,11 @@ import enquirer from "enquirer";
 import { getConfig } from "../../config/config.ts";
 import { openTextEditor } from "../../console/editor.ts";
 import { getLinearClient } from "../../linear/client.ts";
+import { getProjectMilestones } from "../../linear/requests/getProjectMilestones.ts";
 import {
 	getProjects,
 	type LnrProject,
 } from "../../linear/requests/getProjects.ts";
-import { getProjectMilestones } from "../../linear/requests/getProjectMilestones.ts";
 import { type IssuePriority, issuePriorities } from "../../types.ts";
 
 const create = command({
