@@ -10,6 +10,7 @@ import {
 	getProjects,
 	type LnrProject,
 } from "../../linear/requests/getProjects.ts";
+import { getProjectMilestones } from "../../linear/requests/getProjectMilestones.ts";
 import { type IssuePriority, issuePriorities } from "../../types.ts";
 
 const create = command({
@@ -36,6 +37,13 @@ const create = command({
 			description: "Project name",
 		}),
 
+		milestone: option({
+			type: optional(string),
+			long: "milestone",
+			short: "m",
+			description: "Project milestone to add issue to",
+		}),
+
 		team: option({
 			type: optional(string),
 			long: "team",
@@ -55,7 +63,15 @@ const create = command({
 			description: "Label name",
 		}),
 	},
-	handler: async ({ title, description, project, team, label, priority }) => {
+	handler: async ({
+		title,
+		description,
+		project,
+		milestone,
+		team,
+		label,
+		priority,
+	}) => {
 		const config = await getConfig();
 		const client = getLinearClient(config.linearApiKey);
 
@@ -235,6 +251,47 @@ const create = command({
 
 		if (priority) {
 			createInput.priority = issuePriorities.indexOf(priority);
+		}
+
+		if (milestone) {
+			const projectMilestones = await getProjectMilestones(client, projectId);
+
+			if (projectMilestones.length === 0) {
+				console.error(`No milestones found in project`);
+				process.exit(1);
+			}
+
+			const filteredByMilestone = projectMilestones.filter((p) =>
+				p.name.toLowerCase().includes(milestone.toLowerCase()),
+			);
+
+			if (filteredByMilestone.length === 0) {
+				console.error(
+					`Could not find milestones containing name "${milestone}" in project`,
+				);
+				process.exit(1);
+			}
+
+			const milestoneChoices = filteredByMilestone.map((p) => {
+				return {
+					name: p.name,
+					value: p.id,
+				};
+			});
+
+			const newMilestoneId =
+				milestoneChoices.length === 1
+					? milestoneChoices[0].value
+					: (
+							await enquirer.prompt<{ milestoneId: string }>({
+								type: "autocomplete",
+								name: "milestoneId",
+								message: "Select a milestone",
+								choices: milestoneChoices,
+							})
+						).milestoneId;
+
+			createInput.projectMilestoneId = newMilestoneId;
 		}
 
 		const response = await client.createIssue({
