@@ -36,6 +36,7 @@ const getIssuesQuery = `query GetIssues($filter: IssueFilter!, $after: String) {
         name
         displayName
       }
+      priorityLabel
     }
     pageInfo {
     ...PageInfoFragment
@@ -71,6 +72,7 @@ const LnrIssue = z.object({
 		z.object({ name: z.string(), displayName: z.string() }),
 	]),
 	creator: z.object({ name: z.string(), displayName: z.string() }).nullish(),
+	priorityLabel: z.string(),
 });
 
 export type LnrIssue = z.infer<typeof LnrIssue>;

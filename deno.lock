@@ -7,7 +7,6 @@
     "npm:@types/node@^24.10.0": "24.10.0",
     "npm:chalk@^5.6.2": "5.6.2",
     "npm:cli-table3@~0.6.5": "0.6.5",
-    "npm:cmd-ts@~0.14.3": "0.14.3",
     "npm:enquirer@^2.4.1": "2.4.1",
     "npm:graphql@^16.12.0": "16.12.0",
     "npm:open@11": "11.0.0",
@@ -298,11 +297,11 @@
     "packageJson": {
       "dependencies": [
         "npm:@biomejs/biome@^2.3.3",
-        "npm:@linear/sdk@73",
+        "npm:@linear/sdk@75",
         "npm:@types/node@^24.10.0",
         "npm:chalk@^5.6.2",
         "npm:cli-table3@~0.6.5",
-        "npm:cmd-ts@~0.14.3",
+        "npm:cmd-ts@0.15",
         "npm:enquirer@^2.4.1",
         "npm:graphql@^16.12.0",
         "npm:open@11",
