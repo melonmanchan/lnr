@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5 || ^6.0.0"
   },
   "dependencies": {
     "@linear/sdk": "^75.0.0",
