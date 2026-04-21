@@ -45,7 +45,7 @@ jobs:
           ref: ${{ env.TAGTOUSE }}
 
       - name: Set up Deno (v2)
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2.0.4
         with:
           deno-version: v2.x
 
